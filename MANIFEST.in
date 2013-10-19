@@ -1,1 +1,1 @@
-include LICENSE README.rst HISTORY.rst
+include LICENSE HISTORY.rst enzyme/parsers/ebml/specs/matroska.xml enzyme/tests/parsers/ebml/test1.mkv.yml
