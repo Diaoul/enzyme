@@ -1,5 +1,12 @@
-News
-====
+Changelog
+=========
+
+0.3.1
+-----
+**release date:** 2013-10-20
+
+* Fix package distribution
+
 
 0.3
 ---
