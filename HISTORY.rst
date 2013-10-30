@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.4.0
+-----
+**release date:** 2013-10-30
+
+* Import exceptions under enzyme namespace
+* Change repr format
+* Rename base exception
+* Remove test file
+
+
 0.3.1
 -----
 **release date:** 2013-10-20
