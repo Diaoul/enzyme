@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-__all__ = ['EnzymeException', 'MalformedMKVError', 'ParserError', 'ReadError', 'SizeError']
+__all__ = ['Error', 'MalformedMKVError', 'ParserError', 'ReadError', 'SizeError']
 
 
-class EnzymeException(Exception):
+class Error(Exception):
     """Base class for enzyme exceptions"""
     pass
 
 
-class MalformedMKVError(EnzymeException):
+class MalformedMKVError(Error):
     """Wrong or malformed element found"""
     pass
 
 
-class ParserError(EnzymeException):
+class ParserError(Error):
     """Base class for exceptions in parsers"""
     pass
 
