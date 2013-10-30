@@ -14,5 +14,6 @@ except ImportError:
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
+from .exceptions import *
 
 logging.getLogger(__name__).addHandler(NullHandler())
