@@ -84,7 +84,7 @@ class MKV(object):
                 'chapters': [c.__dict__ for c in self.chapters], 'tags': [t.__dict__ for t in self.tags]}
 
     def __repr__(self):
-        return '%s(%r, %r, %r, %r)' % (self.__class__.__name__, self.info, self.video_tracks, self.audio_tracks, self.subtitle_tracks)
+        return '<%s [%r, %r, %r, %r]>' % (self.__class__.__name__, self.info, self.video_tracks, self.audio_tracks, self.subtitle_tracks)
 
 
 class Info(object):
@@ -113,7 +113,7 @@ class Info(object):
         return cls(title, duration, date_utc, timecode_scale, muxing_app, writing_app)
 
     def __repr__(self):
-        return '%s(title=%s, duration=%s, date=%s)' % (self.__class__.__name__, self.title, self.duration, self.date_utc)
+        return '<%s [title=%r, duration=%s, date=%s]>' % (self.__class__.__name__, self.title, self.duration, self.date_utc)
 
     def __str__(self):
         return repr(self.__dict__)
@@ -156,7 +156,7 @@ class Track(object):
                    forced=forced, lacing=lacing, codec_id=codec_id, codec_name=codec_name)
 
     def __repr__(self):
-        return '%s(%d, name=%s, language=%s)' % (self.__class__.__name__, self.number, self.name, self.language)
+        return '<%s [%d, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.name, self.language)
 
     def __str__(self):
         return str(self.__dict__)
@@ -206,7 +206,7 @@ class VideoTrack(Track):
         return videotrack
 
     def __repr__(self):
-        return '%s(%d, %dx%d, %s, name=%s, language=%s)' % (self.__class__.__name__, self.number, self.width, self.height,
+        return '<%s [%d, %dx%d, %s, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.width, self.height,
                                                             self.codec_id, self.name, self.language)
 
     def __str__(self):
@@ -238,7 +238,7 @@ class AudioTrack(Track):
         return audiotrack
 
     def __repr__(self):
-        return '%s(%d, %d channel(s), %.0fHz, %s, name=%s, language=%s)' % (self.__class__.__name__, self.number, self.channels,
+        return '<%s [%d, %d channel(s), %.0fHz, %s, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.channels,
                                                                             self.sampling_frequency, self.codec_id, self.name, self.language)
 
 
@@ -266,7 +266,7 @@ class Tag(object):
         return cls(targets, simpletags)
 
     def __repr__(self):
-        return '%s(targets=%r, simpletags=%r)' % (self.__class__.__name__, self.targets, self.simpletags)
+        return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)
 
 
 class SimpleTag(object):
@@ -294,7 +294,7 @@ class SimpleTag(object):
         return cls(name, language, default, string, binary)
 
     def __repr__(self):
-        return '%s(%s, language=%s, default=%s, string=%s)' % (self.__class__.__name__, self.name, self.language, self.default, self.string)
+        return '<%s [%s, language=%s, default=%s, string=%s]>' % (self.__class__.__name__, self.name, self.language, self.default, self.string)
 
 
 class Chapter(object):
@@ -335,4 +335,4 @@ class Chapter(object):
         return cls(start, hidden, enabled, end, string, language)
 
     def __repr__(self):
-        return '%s(%s, enabled=%s)' % (self.__class__.__name__, self.start, self.enabled)
+        return '<%s [%s, enabled=%s]>' % (self.__class__.__name__, self.start, self.enabled)

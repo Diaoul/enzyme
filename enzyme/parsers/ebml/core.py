@@ -62,7 +62,7 @@ class Element(object):
         self.data = data
 
     def __repr__(self):
-        return '%s(%s, %r)' % (self.__class__.__name__, self.name, self.data)
+        return '<%s [%s, %r]>' % (self.__class__.__name__, self.name, self.data)
 
 
 class MasterElement(Element):
