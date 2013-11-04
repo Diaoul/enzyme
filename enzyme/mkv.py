@@ -20,7 +20,7 @@ class MKV(object):
     :param stream: seekable file-like object
 
     """
-    def __init__(self, stream):
+    def __init__(self, stream, recurse_seek_head=False):
         # default attributes
         self.info = None
         self.video_tracks = []
@@ -30,6 +30,7 @@ class MKV(object):
         self.tags = []
 
         # keep track of the elements parsed
+        self.recurse_seek_head = recurse_seek_head
         self._parsed_positions = set()
 
         try:
@@ -81,10 +82,10 @@ class MKV(object):
                 logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
                 stream.seek(element_position)
                 self.tags.extend([Tag.fromelement(t) for t in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])])
-            elif element_name == 'SeekHead':
+            elif element_name == 'SeekHead' and self.recurse_seek_head:
                 logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
                 stream.seek(element_position)
-                self._parse_seekhead(ebml.parse_element(stream, specs), segment, stream, specs)
+                self._parse_seekhead(ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32']), segment, stream, specs)
             else:
                 logger.debug('Element %s ignored', element_name)
             self._parsed_positions.add(element_position)

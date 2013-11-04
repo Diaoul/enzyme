@@ -3,9 +3,10 @@ Changelog
 
 0.4.1
 -----
-**release date:** 2013-11-04
+**release date:** 2013-11-05
 
 * Fix parsing nested SeekHead elements
+* Make parsing nested SeekHead elements optional
 
 
 0.4.0
