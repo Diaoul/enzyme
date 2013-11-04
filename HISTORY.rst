@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.4.1
+-----
+**release date:** 2013-11-04
+
+* Fix parsing nested SeekHead elements
+
+
 0.4.0
 -----
 **release date:** 2013-10-30

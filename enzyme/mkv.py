@@ -29,6 +29,9 @@ class MKV(object):
         self.chapters = []
         self.tags = []
 
+        # keep track of the elements parsed
+        self._parsed_positions = set()
+
         try:
             # get the Segment element
             logger.info('Reading Segment element')
@@ -40,43 +43,51 @@ class MKV(object):
                 logger.warning('%d segments found, using the first one', len(segments))
             segment = segments[0]
 
-            # get the SeekHead element
+            # get and recursively parse the SeekHead element
             logger.info('Reading SeekHead element')
             stream.seek(segment.position)
             seek_head = ebml.parse_element(stream, specs)
             if seek_head.name != 'SeekHead':
                 raise MalformedMKVError('No SeekHead found')
             seek_head.load(stream, specs, ignore_element_names=['Void', 'CRC-32'])
-
-            # parse interesting informations
-            for seek in seek_head:
-                element_id = ebml.read_element_id(seek['SeekID'].data)
-                element_name = specs[element_id][1]
-                element_position = seek['SeekPosition'].data + segment.position
-                if element_name == 'Info':
-                    logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
-                    stream.seek(element_position)
-                    self.info = Info.fromelement(ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32']))
-                elif element_name == 'Tracks':
-                    logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
-                    stream.seek(element_position)
-                    tracks = ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])
-                    self.video_tracks = [VideoTrack.fromelement(t) for t in tracks if t['TrackType'].data == VIDEO_TRACK]
-                    self.audio_tracks = [AudioTrack.fromelement(t) for t in tracks if t['TrackType'].data == AUDIO_TRACK]
-                    self.subtitle_tracks = [SubtitleTrack.fromelement(t) for t in tracks if t['TrackType'].data == SUBTITLE_TRACK]
-                elif element_name == 'Chapters':
-                    logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
-                    stream.seek(element_position)
-                    self.chapters = [Chapter.fromelement(c) for c in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])[0] if c.name == 'ChapterAtom']
-                elif element_name == 'Tags':
-                    logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
-                    stream.seek(element_position)
-                    self.tags = [Tag.fromelement(t) for t in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])]
-                else:
-                    logger.debug('Element %s ignored', element_name)
-                    continue
+            self._parse_seekhead(seek_head, segment, stream, specs)
         except ParserError as e:
             raise MalformedMKVError('Parsing error: %s' % e)
+
+    def _parse_seekhead(self, seek_head, segment, stream, specs):
+        for seek in seek_head:
+            element_id = ebml.read_element_id(seek['SeekID'].data)
+            element_name = specs[element_id][1]
+            element_position = seek['SeekPosition'].data + segment.position
+            if element_position in self._parsed_positions:
+                logger.warning('Skipping already parsed %s element at position %d', element_name, element_position)
+                continue
+            if element_name == 'Info':
+                logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
+                stream.seek(element_position)
+                self.info = Info.fromelement(ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32']))
+            elif element_name == 'Tracks':
+                logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
+                stream.seek(element_position)
+                tracks = ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])
+                self.video_tracks.extend([VideoTrack.fromelement(t) for t in tracks if t['TrackType'].data == VIDEO_TRACK])
+                self.audio_tracks.extend([AudioTrack.fromelement(t) for t in tracks if t['TrackType'].data == AUDIO_TRACK])
+                self.subtitle_tracks.extend([SubtitleTrack.fromelement(t) for t in tracks if t['TrackType'].data == SUBTITLE_TRACK])
+            elif element_name == 'Chapters':
+                logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
+                stream.seek(element_position)
+                self.chapters.extend([Chapter.fromelement(c) for c in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])[0] if c.name == 'ChapterAtom'])
+            elif element_name == 'Tags':
+                logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
+                stream.seek(element_position)
+                self.tags.extend([Tag.fromelement(t) for t in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])])
+            elif element_name == 'SeekHead':
+                logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
+                stream.seek(element_position)
+                self._parse_seekhead(ebml.parse_element(stream, specs), segment, stream, specs)
+            else:
+                logger.debug('Element %s ignored', element_name)
+            self._parsed_positions.add(element_position)
 
     def to_dict(self):
         return {'info': self.info.__dict__, 'video_tracks': [t.__dict__ for t in self.video_tracks],
