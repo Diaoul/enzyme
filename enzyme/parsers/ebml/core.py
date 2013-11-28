@@ -52,7 +52,7 @@ class Element(object):
     :param data: data as read by the corresponding :data:`READERS`
 
     """
-    def __init__(self, id=None, type=None, name=None, level=None, position=None, size=None, data=None):
+    def __init__(self, id=None, type=None, name=None, level=None, position=None, size=None, data=None):  # @ReservedAssignment
         self.id = id
         self.type = type
         self.name = name
@@ -89,7 +89,7 @@ class MasterElement(Element):
         Element(DocType, u'matroska')
 
     """
-    def __init__(self, id=None, name=None, level=None, position=None, size=None, data=None):
+    def __init__(self, id=None, name=None, level=None, position=None, size=None, data=None):  # @ReservedAssignment
         super(MasterElement, self).__init__(id, MASTER, name, level, position, size, data)
 
     def load(self, stream, specs, ignore_element_types=None, ignore_element_names=None, max_level=None):

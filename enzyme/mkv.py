@@ -133,7 +133,7 @@ class Info(object):
 
 class Track(object):
     """Base object for the Tracks EBML element"""
-    def __init__(self, type=None, number=None, name=None, language=None, enabled=None, default=None, forced=None, lacing=None,
+    def __init__(self, type=None, number=None, name=None, language=None, enabled=None, default=None, forced=None, lacing=None,  # @ReservedAssignment
                  codec_id=None, codec_name=None):
         self.type = type
         self.number = number
@@ -154,7 +154,7 @@ class Track(object):
         :type element: :class:`~enzyme.parsers.ebml.Element`
 
         """
-        type = element.get('TrackType')
+        type = element.get('TrackType')  # @ReservedAssignment
         number = element.get('TrackNumber', 0)
         name = element.get('Name')
         language = element.get('Language')
