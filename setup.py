@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='enzyme',
-    version='0.4.1',
+    version='0.4.2-dev',
     license='Apache 2.0',
     description='Python video metadata parser',
     long_description=open('README.rst').read() + '\n\n' + open('HISTORY.rst').read(),
