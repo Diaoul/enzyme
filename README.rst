@@ -9,7 +9,8 @@ Enzyme is a Python module to parse video metadata.
 
 Usage
 -----
-Parse a MKV file::
+
+Parse a MKV file:
 
     >>> import enzyme
     >>> with open('example.mkv', 'rb') as f:
