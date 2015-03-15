@@ -11,16 +11,16 @@ Usage
 -----
 Parse a MKV file::
 
-    >>> with open('How.I.Met.Your.Mother.S08E21.720p.HDTV.X264-DIMENSION.mkv', 'rb') as f:
-    ...    mkv = enzyme.MKV(f)
+    >>> import enzyme
+    >>> with open('example.mkv', 'rb') as f:
+    ...     mkv = enzyme.MKV(f)
     ... 
     >>> mkv.info
-    <Info [title=None, duration=0:20:56.005000, date=2013-04-15 14:06:50]>
+    <Info [title=None, duration=0:00:01.440000, date=2015-03-14 08:40:16]>
     >>> mkv.video_tracks
-    [<VideoTrack [1, 1280x720, V_MPEG4/ISO/AVC, name=None, language=eng]>]
+    [<VideoTrack [2, 720x576, V_DIRAC, name=u'Video\x00', language=None]>]
     >>> mkv.audio_tracks
-    [<AudioTrack [2, 6 channel(s), 48000Hz, A_AC3, name=None, language=und]>]
-
+    [<AudioTrack [1, 2 channel(s), 44100Hz, A_MS/ACM, name=u'Audio\x00', language=None]>]
 
 License
 -------
