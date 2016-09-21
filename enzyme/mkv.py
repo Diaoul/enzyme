@@ -314,12 +314,13 @@ class Targets(object):
 
 class SimpleTag(object):
     """Object for the SimpleTag EBML element"""
-    def __init__(self, name, language='und', default=True, string=None, binary=None):
+    def __init__(self, name, language='und', default=True, string=None, binary=None, simpletags=[]):
         self.name = name
         self.language = language
         self.default = default
         self.string = string
         self.binary = binary
+        self.simpletags = simpletags
 
     @classmethod
     def fromelement(cls, element):
@@ -334,10 +335,14 @@ class SimpleTag(object):
         default = element.get('TagDefault', True)
         string = element.get('TagString')
         binary = element.get('TagBinary')
-        return cls(name, language, default, string, binary)
+        simpletags = [SimpleTag.fromelement(t) for t in element.getMasterElements()]
+        return cls(name, language, default, string, binary, simpletags)
 
     def __repr__(self):
-        return '<%s [%s, language=%s, default=%s, string=%s]>' % (self.__class__.__name__, self.name, self.language, self.default, self.string)
+        if len(self.simpletags) == 0:
+            return '<%s [%s, language=%s, default=%s, string=%s]>' % (self.__class__.__name__, self.name, self.language, self.default, self.string)
+        else:
+            return '<%s [%s, language=%s, default=%s, string=%s, simpletags=%r]>' % (self.__class__.__name__, self.name, self.language, self.default, self.string, self.simpletags)
 
 
 class Chapter(object):
