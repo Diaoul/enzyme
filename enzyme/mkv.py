@@ -134,7 +134,7 @@ class Info(object):
 class Track(object):
     """Base object for the Tracks EBML element"""
     def __init__(self, type=None, number=None, name=None, language=None, enabled=None, default=None, forced=None, lacing=None,  # @ReservedAssignment
-                 codec_id=None, codec_name=None):
+                 codec_id=None, codec_name=None, uid=None):
         self.type = type
         self.number = number
         self.name = name
@@ -145,6 +145,7 @@ class Track(object):
         self.lacing = lacing
         self.codec_id = codec_id
         self.codec_name = codec_name
+        self.uid = uid
 
     @classmethod
     def fromelement(cls, element):
@@ -164,8 +165,10 @@ class Track(object):
         lacing = bool(element.get('FlagLacing', 1))
         codec_id = element.get('CodecID')
         codec_name = element.get('CodecName')
+        uid = element.get('TrackUID', 0)
+
         return cls(type=type, number=number, name=name, language=language, enabled=enabled, default=default,
-                   forced=forced, lacing=lacing, codec_id=codec_id, codec_name=codec_name)
+                   forced=forced, lacing=lacing, codec_id=codec_id, codec_name=codec_name, uid=uid)
 
     def __repr__(self):
         return '<%s [%d, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.name, self.language)
