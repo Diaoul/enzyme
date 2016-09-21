@@ -276,13 +276,41 @@ class Tag(object):
         :type element: :class:`~enzyme.parsers.ebml.Element`
 
         """
-        targets = element['Targets'] if 'Targets' in element else []
+        targets = Targets.fromelement(element['Targets']) if 'Targets' in element else Targets()
         simpletags = [SimpleTag.fromelement(s) for s in element if s.name == 'SimpleTag']
         return cls(targets, simpletags)
 
     def __repr__(self):
         return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)
 
+class Targets(object):
+    """Object for the Targets EBML element"""
+    def __init__(self, targettypevalue=None, targettype=None, trackUIDs=[], chapterUIDs=[], attachementUIDs=[], editionUIDs=[]):
+        self.targettypevalue = targettypevalue
+        self.targettype = targettype
+        self.trackUIDs = trackUIDs 
+        self.chapterUIDs = chapterUIDs
+        self.attachementUIDs = attachementUIDs
+        self.editionUIDs = editionUIDs
+
+    @classmethod
+    def fromelement(cls, element):
+        """Load the :class:`Targets` from an :class:`~enzyme.parsers.ebml.Element`
+
+        :param element: the Targets element
+        :type element: :class:`~enzyme.parsers.ebml.Element`
+
+        """
+        targettype = element.get('TargetType')
+        targettypevalue = element.get('TargetTypeValue')
+        trackUIDs = element.getAll('TagTrackUID')
+        chapterUIDS = element.getAll('TagChapterUID')
+        attachementUIDs = element.getAll('TagAttachementUID')
+        editionUIDs = element.getAll('TagEditionUID')
+        return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachementUIDs, editionUIDs)
+
+    def __repr__(self):
+        return '<%s [%d, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, self.targettypevalue, self.targettype, sum([len(t) for t in [self.chapterUIDs,self.trackUIDs,self.editionUIDs,self.attachementUIDs]]))
 
 class SimpleTag(object):
     """Object for the SimpleTag EBML element"""
