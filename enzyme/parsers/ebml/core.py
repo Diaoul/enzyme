@@ -136,6 +136,9 @@ class MasterElement(Element):
             raise ValueError('%s elements contain MasterElement' % name)
         return [e.data for e in elements]
 
+    def getMasterElements(self):
+        return [e for e in self if e.type == MASTER]
+        
     def __getitem__(self, key):
         if isinstance(key, int):
             return self.data[key]
