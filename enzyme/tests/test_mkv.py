@@ -373,6 +373,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.chapters) == 0)
         # tags
         self.assertTrue(len(mkv.tags) == 1)
+        self.assertTrue(mkv.tags[0].targets.targettypevalue == 50)
         self.assertTrue(len(mkv.tags[0].simpletags) == 3)
         self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
         self.assertTrue(mkv.tags[0].simpletags[0].default == True)
