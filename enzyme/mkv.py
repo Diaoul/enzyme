@@ -310,7 +310,7 @@ class Targets(object):
         return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachementUIDs, editionUIDs)
 
     def __repr__(self):
-        return '<%s [%d, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, self.targettypevalue, self.targettype, sum([len(t) for t in [self.chapterUIDs,self.trackUIDs,self.editionUIDs,self.attachementUIDs]]))
+        return '<%s [%s, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, str(self.targettypevalue), self.targettype, sum([len(t) for t in [self.chapterUIDs,self.trackUIDs,self.editionUIDs,self.attachementUIDs]]))
 
 class SimpleTag(object):
     """Object for the SimpleTag EBML element"""
