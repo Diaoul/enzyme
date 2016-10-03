@@ -607,7 +607,7 @@ class MKVTestCase(unittest.TestCase):
             mkv = MKV(stream)
         # info
         self.assertTrue(mkv.info.title is None)
-        self.assertTrue(mkv.info.duration == timedelta(seconds=156)
+        self.assertTrue(mkv.info.duration == timedelta(seconds=156))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 9, 23, 19, 1, 57))
         self.assertTrue(mkv.info.muxing_app == 'libebml2 v0.12.1 + libmatroska2 v0.11.1')
         self.assertTrue(mkv.info.writing_app == "mkclean 0.6.0 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08")
