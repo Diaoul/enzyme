@@ -725,7 +725,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[2].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[2].simpletags[2].string is None)
         self.assertTrue(mkv.tags[2].simpletags[2].binary is None)
-        self.assertTrue(len(mkv.tags[2].simpletags[2].simpletags) ==  2)
+        self.assertTrue(len(mkv.tags[2].simpletags[2].simpletags) ==  1)
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].name ==  'URL')
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].default ==  True)
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].language ==  'und')
