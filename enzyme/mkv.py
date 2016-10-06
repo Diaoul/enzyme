@@ -354,14 +354,15 @@ class Chapter(object):
         are merged into the :class:`Chapter`
 
     """
-    def __init__(self, start, hidden=False, enabled=False, end=None, string=None, language=None):
+    def __init__(self, start, hidden=False, enabled=False, end=None, uid=None, string=None, language=None):
         self.start = start
         self.hidden = hidden
         self.enabled = enabled
         self.end = end
         self.string = string
         self.language = language
-
+        self.uid = uid
+        
     @classmethod
     def fromelement(cls, element):
         """Load the :class:`Chapter` from an :class:`~enzyme.parsers.ebml.Element`
@@ -374,14 +375,15 @@ class Chapter(object):
         hidden = element.get('ChapterFlagHidden', False)
         enabled = element.get('ChapterFlagEnabled', True)
         end = element.get('ChapterTimeEnd')
+        uid = element.get('ChapterUID')
         chapterdisplays = [c for c in element if c.name == 'ChapterDisplay']
         if len(chapterdisplays) > 1:
             logger.warning('More than 1 (%d) ChapterDisplay element in the ChapterAtom, using the first one', len(chapterdisplays))
         if chapterdisplays:
             string = chapterdisplays[0].get('ChapString')
             language = chapterdisplays[0].get('ChapLanguage')
-            return cls(start, hidden, enabled, end, string, language)
-        return cls(start, hidden, enabled, end)
+            return cls(start, hidden, enabled, end, uid, string, language)
+        return cls(start, hidden, enabled, end, uid)
 
     def __repr__(self):
         return '<%s [%s, enabled=%s]>' % (self.__class__.__name__, self.start, self.enabled)
