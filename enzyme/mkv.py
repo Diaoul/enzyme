@@ -285,7 +285,7 @@ class Tag(object):
 
 class Targets(object):
     """Object for the Targets EBML element"""
-    def __init__(self, targettypevalue=None, targettype=None, trackUIDs=[], chapterUIDs=[], attachementUIDs=[], editionUIDs=[]):
+    def __init__(self, targettypevalue=50, targettype=None, trackUIDs=[], chapterUIDs=[], attachementUIDs=[], editionUIDs=[]):
         self.targettypevalue = targettypevalue
         self.targettype = targettype
         self.trackUIDs = trackUIDs 
@@ -302,7 +302,7 @@ class Targets(object):
 
         """
         targettype = element.get('TargetType')
-        targettypevalue = element.get('TargetTypeValue')
+        targettypevalue = element.get('TargetTypeValue', 50)
         trackUIDs = element.getAll('TagTrackUID')
         chapterUIDS = element.getAll('TagChapterUID')
         attachementUIDs = element.getAll('TagAttachementUID')
@@ -362,7 +362,7 @@ class Chapter(object):
         self.string = string
         self.language = language
         self.uid = uid
-        
+
     @classmethod
     def fromelement(cls, element):
         """Load the :class:`Chapter` from an :class:`~enzyme.parsers.ebml.Element`
