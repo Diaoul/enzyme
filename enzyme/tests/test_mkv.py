@@ -699,6 +699,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[1].simpletags[1].binary is None)
         ## tag 2
         self.assertTrue(len(mkv.tags[2].simpletags) == 3)
+        self.assertTrue(mkv.tags[1].targets.targettypevalue == 50)
+        self.assertTrue(mkv.tags[1].targets.targettype is None)
         self.assertTrue(mkv.tags[2].simpletags[0].name == 'SAMPLE')
         self.assertTrue(mkv.tags[2].simpletags[0].default == True)
         self.assertTrue(mkv.tags[2].simpletags[0].language == 'und')
