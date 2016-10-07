@@ -14,14 +14,15 @@ TEST_DIR = os.path.join(os.path.dirname(__file__), os.path.splitext(__file__)[0]
 
 def setUpModule():
     if not os.path.exists(TEST_DIR):
-        # matroska test file Wave 1
+        # matroska test suite Wave 1
         r = requests.get('http://downloads.sourceforge.net/project/matroska/test_files/matroska_test_w1_1.zip')
         with zipfile.ZipFile(io.BytesIO(r.content), 'r') as f:
             f.extractall(TEST_DIR)
-        # Matroska cover_art test file 
-        r2 = requests.get('http://downloads.sourceforge.net/project/matroska/test_files/cover_art.mkv')
-        with io.open(os.path.join(TEST_DIR,'cover_art.mkv'),'wb') as f:
-            f.write(r2.content)
+        # matroska cover_art test file
+        r = requests.get('http://downloads.sourceforge.net/project/matroska/test_files/cover_art.mkv')
+        with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'wb') as f:
+            f.write(r.content)
+
 
 class MKVTestCase(unittest.TestCase):
     def test_test1(self):
@@ -601,7 +602,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
-    
+
     def test_cover_art(self):
         with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
             mkv = MKV(stream)
@@ -652,10 +653,9 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
         # chapters
         self.assertTrue(len(mkv.chapters) == 0)
-        
         # tags
         self.assertTrue(len(mkv.tags) == 3)
-        ## tag 0
+        #  tag 0
         self.assertTrue(mkv.tags[0].targets.targettypevalue == 70)
         self.assertTrue(mkv.tags[0].targets.targettype is None)
         self.assertTrue(len(mkv.tags[0].targets.chapterUIDs) == 0)
@@ -673,13 +673,13 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[1].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[1].string == 'ShowTime')
         self.assertTrue(mkv.tags[0].simpletags[1].binary is None)
-        self.assertTrue(len(mkv.tags[0].simpletags[1].simpletags) ==  1)
-        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].name ==  'URL')
-        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].default ==  True)
-        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].language ==  'und')
+        self.assertTrue(len(mkv.tags[0].simpletags[1].simpletags) == 1)
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].name == 'URL')
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].string == 'http://www.sho.com/')
         self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].binary is None)
-        ## tag 1
+        #  tag 1
         self.assertTrue(mkv.tags[1].targets.targettypevalue == 60)
         self.assertTrue(mkv.tags[1].targets.targettype is None)
         self.assertTrue(len(mkv.tags[1].targets.chapterUIDs) == 0)
@@ -697,7 +697,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[1].simpletags[1].language == 'und')
         self.assertTrue(mkv.tags[1].simpletags[1].string == '2010')
         self.assertTrue(mkv.tags[1].simpletags[1].binary is None)
-        ## tag 2
+        #  tag 2
         self.assertTrue(len(mkv.tags[2].simpletags) == 3)
         self.assertTrue(mkv.tags[2].targets.targettypevalue == 50)
         self.assertTrue(mkv.tags[2].targets.targettype is None)
@@ -706,15 +706,15 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[2].simpletags[0].language == 'und')
         self.assertTrue(mkv.tags[2].simpletags[0].string is None)
         self.assertTrue(mkv.tags[2].simpletags[0].binary is None)
-        self.assertTrue(len(mkv.tags[2].simpletags[0].simpletags) ==  2)
-        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].name ==  'PART_NUMBER')
-        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].default ==  True)
-        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].language ==  'und')
+        self.assertTrue(len(mkv.tags[2].simpletags[0].simpletags) == 2)
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].name == 'PART_NUMBER')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].language == 'und')
         self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].string == '0')
         self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].binary is None)
-        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].name ==  'TITLE')
-        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].default ==  True)
-        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].language ==  'und')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].name == 'TITLE')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].language == 'und')
         self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].string == 'Trailer')
         self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].binary is None)
         self.assertTrue(mkv.tags[2].simpletags[1].name == 'TITLE')
@@ -727,12 +727,13 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[2].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[2].simpletags[2].string is None)
         self.assertTrue(mkv.tags[2].simpletags[2].binary is None)
-        self.assertTrue(len(mkv.tags[2].simpletags[2].simpletags) ==  1)
-        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].name ==  'URL')
-        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].default ==  True)
-        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].language ==  'und')
+        self.assertTrue(len(mkv.tags[2].simpletags[2].simpletags) == 1)
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].name == 'URL')
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].language == 'und')
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].string == 'http://www.youtube.com/watch?v=CUbCMbW-BRE')
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].binary is None)
+
 
 def suite():
     suite = unittest.TestSuite()

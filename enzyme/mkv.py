@@ -222,7 +222,7 @@ class VideoTrack(Track):
 
     def __repr__(self):
         return '<%s [%d, %dx%d, %s, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.width, self.height,
-                                                            self.codec_id, self.name, self.language)
+                                                               self.codec_id, self.name, self.language)
 
     def __str__(self):
         return str(self.__dict__)
@@ -254,7 +254,7 @@ class AudioTrack(Track):
 
     def __repr__(self):
         return '<%s [%d, %d channel(s), %.0fHz, %s, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.channels,
-                                                                            self.sampling_frequency, self.codec_id, self.name, self.language)
+                                                                               self.sampling_frequency, self.codec_id, self.name, self.language)
 
 
 class SubtitleTrack(Track):
@@ -283,15 +283,16 @@ class Tag(object):
     def __repr__(self):
         return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)
 
+
 class Targets(object):
     """Object for the Targets EBML element"""
-    def __init__(self, targettypevalue=50, targettype=None, trackUIDs=[], chapterUIDs=[], attachementUIDs=[], editionUIDs=[]):
+    def __init__(self, targettypevalue=50, targettype=None, trackUIDs=None, chapterUIDs=None, attachementUIDs=None, editionUIDs=None):
         self.targettypevalue = targettypevalue
         self.targettype = targettype
-        self.trackUIDs = trackUIDs 
-        self.chapterUIDs = chapterUIDs
-        self.attachementUIDs = attachementUIDs
-        self.editionUIDs = editionUIDs
+        self.trackUIDs = trackUIDs if trackUIDs is not None else []
+        self.chapterUIDs = chapterUIDs if chapterUIDs is not None else []
+        self.attachementUIDs = attachementUIDs if attachementUIDs is not None else []
+        self.editionUIDs = editionUIDs if editionUIDs is not None else []
 
     @classmethod
     def fromelement(cls, element):
@@ -303,24 +304,26 @@ class Targets(object):
         """
         targettype = element.get('TargetType')
         targettypevalue = element.get('TargetTypeValue', 50)
-        trackUIDs = element.getAll('TagTrackUID')
-        chapterUIDS = element.getAll('TagChapterUID')
-        attachementUIDs = element.getAll('TagAttachementUID')
-        editionUIDs = element.getAll('TagEditionUID')
+        trackUIDs = element.get_all('TagTrackUID')
+        chapterUIDS = element.get_all('TagChapterUID')
+        attachementUIDs = element.get_all('TagAttachementUID')
+        editionUIDs = element.get_all('TagEditionUID')
         return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachementUIDs, editionUIDs)
 
     def __repr__(self):
-        return '<%s [%s, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, str(self.targettypevalue), self.targettype, sum([len(t) for t in [self.chapterUIDs,self.trackUIDs,self.editionUIDs,self.attachementUIDs]]))
+        return '<%s [%s, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, str(self.targettypevalue), self.targettype,
+                                                             sum([len(t) for t in [self.chapterUIDs, self.trackUIDs, self.editionUIDs, self.attachementUIDs]]))
+
 
 class SimpleTag(object):
     """Object for the SimpleTag EBML element"""
-    def __init__(self, name, language='und', default=True, string=None, binary=None, simpletags=[]):
+    def __init__(self, name, language='und', default=True, string=None, binary=None, simpletags=None):
         self.name = name
         self.language = language
         self.default = default
         self.string = string
         self.binary = binary
-        self.simpletags = simpletags
+        self.simpletags = simpletags if simpletags is not None else []
 
     @classmethod
     def fromelement(cls, element):
@@ -335,7 +338,7 @@ class SimpleTag(object):
         default = element.get('TagDefault', True)
         string = element.get('TagString')
         binary = element.get('TagBinary')
-        simpletags = [SimpleTag.fromelement(t) for t in element.getMasterElements()]
+        simpletags = [SimpleTag.fromelement(t) for t in element.get_master_elements()]
         return cls(name, language, default, string, binary, simpletags)
 
     def __repr__(self):
