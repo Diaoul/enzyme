@@ -2,6 +2,7 @@
 from .exceptions import ParserError, MalformedMKVError
 from .parsers import ebml
 from datetime import timedelta
+from sys import getsizeof
 import logging
 
 
@@ -28,7 +29,7 @@ class MKV(object):
         self.subtitle_tracks = []
         self.chapters = []
         self.tags = []
-
+        self.attachments = []
         # keep track of the elements parsed
         self.recurse_seek_head = recurse_seek_head
         self._parsed_positions = set()
@@ -82,6 +83,10 @@ class MKV(object):
                 logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
                 stream.seek(element_position)
                 self.tags.extend([Tag.fromelement(t) for t in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])])
+            elif element_name == 'Attachments':
+                logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
+                stream.seek(element_position)
+                self.attachments.extend([Attachment.fromelement(t) for t in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])])
             elif element_name == 'SeekHead' and self.recurse_seek_head:
                 logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
                 stream.seek(element_position)
@@ -96,7 +101,7 @@ class MKV(object):
                 'chapters': [c.__dict__ for c in self.chapters], 'tags': [t.__dict__ for t in self.tags]}
 
     def __repr__(self):
-        return '<%s [%r, %r, %r, %r]>' % (self.__class__.__name__, self.info, self.video_tracks, self.audio_tracks, self.subtitle_tracks)
+        return '<%s [%r, %r, %r, %r, %d tags, %d attachments]>' % (self.__class__.__name__, self.info, self.video_tracks, self.audio_tracks, self.subtitle_tracks, len(self.tags), len(self.attachments))
 
 
 class Info(object):
@@ -390,3 +395,32 @@ class Chapter(object):
 
     def __repr__(self):
         return '<%s [%s, enabled=%s]>' % (self.__class__.__name__, self.start, self.enabled)
+
+
+class Attachment(object):
+    """Object for the Attachedfile EBML element"""
+    def __init__(self, description=None, name=None, mime_type=None, uid=None, data=None):
+        self.description = description
+        self.name = name
+        self.mime_type = mime_type
+        self.uid = uid
+        self.data = data
+
+    @classmethod
+    def fromelement(cls, element):
+        """Load the :class:`Attachment` from a :class:`~enzyme.parsers.ebml.Element`
+
+        :param element: the Attachedfile element element
+        :type element: :class:`~enzyme.parsers.ebml.Element`
+
+        """
+        description = element.get('FileDescription', '')
+        name = element.get('FileName', '')
+        mime_type = element.get('FileMimeType', '')
+        uid = element.get('FileUID', '')
+        data = element.get('FileData', None)
+
+        return cls(description, name, mime_type, uid, data)
+
+    def __repr__(self):
+        return '<%s [%s, type=%s, %d KB]>' % (self.__class__.__name__, self.description if not self.description == '' else self.name, self.mime_type, getsizeof(self.data)/1000)
