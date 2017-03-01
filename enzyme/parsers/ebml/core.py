@@ -121,7 +121,7 @@ class MasterElement(Element):
             raise ValueError('%s is a MasterElement' % name)
         return element.data
 
-    def get_all(self, name, default=[]):
+    def get_all(self, name, default=None):
         """Convenience method for ``[element.data for element in master_element if element.name == name]``
 
         :param string name: the name of the children to get
@@ -130,7 +130,7 @@ class MasterElement(Element):
 
         """
         if name not in self:
-            return default
+            return default if default is not None else []
         elements = [e for e in self.data if e.name == name]
         if any([e.type == MASTER for e in elements]):
             raise ValueError('%s elements contain MasterElement' % name)
