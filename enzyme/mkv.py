@@ -291,12 +291,12 @@ class Tag(object):
 
 class Targets(object):
     """Object for the Targets EBML element"""
-    def __init__(self, targettypevalue=50, targettype=None, trackUIDs=None, chapterUIDs=None, attachementUIDs=None, editionUIDs=None):
+    def __init__(self, targettypevalue=50, targettype=None, trackUIDs=None, chapterUIDs=None, attachmentUIDs=None, editionUIDs=None):
         self.targettypevalue = targettypevalue
         self.targettype = targettype
         self.trackUIDs = trackUIDs if trackUIDs is not None else []
         self.chapterUIDs = chapterUIDs if chapterUIDs is not None else []
-        self.attachementUIDs = attachementUIDs if attachementUIDs is not None else []
+        self.attachmentUIDs = attachmentUIDs if attachmentUIDs is not None else []
         self.editionUIDs = editionUIDs if editionUIDs is not None else []
 
     @classmethod
@@ -311,13 +311,13 @@ class Targets(object):
         targettypevalue = element.get('TargetTypeValue', 50)
         trackUIDs = element.get_all('TagTrackUID')
         chapterUIDS = element.get_all('TagChapterUID')
-        attachementUIDs = element.get_all('TagAttachementUID')
+        attachmentUIDs = element.get_all('TagAttachmentUID')
         editionUIDs = element.get_all('TagEditionUID')
-        return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachementUIDs, editionUIDs)
+        return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachmentUIDs, editionUIDs)
 
     def __repr__(self):
         return '<%s [%s, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, str(self.targettypevalue), self.targettype,
-                                                             sum([len(t) for t in [self.chapterUIDs, self.trackUIDs, self.editionUIDs, self.attachementUIDs]]))
+                                                             sum([len(t) for t in [self.chapterUIDs, self.trackUIDs, self.editionUIDs, self.attachmentUIDs]]))
 
 
 class SimpleTag(object):
@@ -414,10 +414,10 @@ class Attachment(object):
         :type element: :class:`~enzyme.parsers.ebml.Element`
 
         """
-        description = element.get('FileDescription', '')
-        name = element.get('FileName', '')
-        mime_type = element.get('FileMimeType', '')
-        uid = element.get('FileUID', '')
+        description = element.get('FileDescription')
+        name = element.get('FileName')
+        mime_type = element.get('FileMimeType')
+        uid = element.get('FileUID')
         data = element.get('FileData', None)
 
         return cls(description, name, mime_type, uid, data)
