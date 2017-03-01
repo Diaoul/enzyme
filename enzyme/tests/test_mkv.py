@@ -6,6 +6,7 @@ import os.path
 import requests
 import unittest
 import zipfile
+from sys import getsizeof
 
 
 # Test directory
@@ -655,7 +656,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.chapters) == 0)
         # tags
         self.assertTrue(len(mkv.tags) == 3)
-        #  tag 0
+        # tag 0
         self.assertTrue(mkv.tags[0].targets.targettypevalue == 70)
         self.assertTrue(mkv.tags[0].targets.targettype is None)
         self.assertTrue(len(mkv.tags[0].targets.chapterUIDs) == 0)
@@ -733,6 +734,28 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].language == 'und')
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].string == 'http://www.youtube.com/watch?v=CUbCMbW-BRE')
         self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].binary is None)
+        # attachments
+        self.assertTrue(len(mkv.attachments) == 4)
+        # attachment 0
+        self.assertTrue(mkv.attachments[0].name == 'cover.jpg')
+        self.assertTrue(mkv.attachments[0].description is None)
+        self.assertTrue(mkv.attachments[0].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[0].data) == 133029)
+        # attachment 1
+        self.assertTrue(mkv.attachments[1].name == 'small_cover.jpg')
+        self.assertTrue(mkv.attachments[1].description is None)
+        self.assertTrue(mkv.attachments[1].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[1].data) == 18312)
+        # attachment 2
+        self.assertTrue(mkv.attachments[2].name == 'cover_land.jpg')
+        self.assertTrue(mkv.attachments[2].description is None)
+        self.assertTrue(mkv.attachments[2].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[2].data) == 106256)
+        # attachment 3
+        self.assertTrue(mkv.attachments[3].name == 'small_cover_land.jpg')
+        self.assertTrue(mkv.attachments[3].description is None)
+        self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[3].data) == 16542)
 
 
 def suite():
