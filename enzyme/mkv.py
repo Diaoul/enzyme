@@ -134,7 +134,7 @@ class Info(object):
 class Track(object):
     """Base object for the Tracks EBML element"""
     def __init__(self, type=None, number=None, name=None, language=None, enabled=None, default=None, forced=None, lacing=None,  # @ReservedAssignment
-                 codec_id=None, codec_name=None):
+                 codec_id=None, codec_name=None, uid=None):
         self.type = type
         self.number = number
         self.name = name
@@ -145,6 +145,7 @@ class Track(object):
         self.lacing = lacing
         self.codec_id = codec_id
         self.codec_name = codec_name
+        self.uid = uid
 
     @classmethod
     def fromelement(cls, element):
@@ -164,8 +165,10 @@ class Track(object):
         lacing = bool(element.get('FlagLacing', 1))
         codec_id = element.get('CodecID')
         codec_name = element.get('CodecName')
+        uid = element.get('TrackUID', 0)
+
         return cls(type=type, number=number, name=name, language=language, enabled=enabled, default=default,
-                   forced=forced, lacing=lacing, codec_id=codec_id, codec_name=codec_name)
+                   forced=forced, lacing=lacing, codec_id=codec_id, codec_name=codec_name, uid=uid)
 
     def __repr__(self):
         return '<%s [%d, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.name, self.language)
@@ -219,7 +222,7 @@ class VideoTrack(Track):
 
     def __repr__(self):
         return '<%s [%d, %dx%d, %s, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.width, self.height,
-                                                            self.codec_id, self.name, self.language)
+                                                               self.codec_id, self.name, self.language)
 
     def __str__(self):
         return str(self.__dict__)
@@ -251,7 +254,7 @@ class AudioTrack(Track):
 
     def __repr__(self):
         return '<%s [%d, %d channel(s), %.0fHz, %s, name=%r, language=%s]>' % (self.__class__.__name__, self.number, self.channels,
-                                                                            self.sampling_frequency, self.codec_id, self.name, self.language)
+                                                                               self.sampling_frequency, self.codec_id, self.name, self.language)
 
 
 class SubtitleTrack(Track):
@@ -273,7 +276,7 @@ class Tag(object):
         :type element: :class:`~enzyme.parsers.ebml.Element`
 
         """
-        targets = element['Targets'] if 'Targets' in element else []
+        targets = Targets.fromelement(element['Targets']) if 'Targets' in element else Targets()
         simpletags = [SimpleTag.fromelement(s) for s in element if s.name == 'SimpleTag']
         return cls(targets, simpletags)
 
@@ -281,14 +284,46 @@ class Tag(object):
         return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)
 
 
+class Targets(object):
+    """Object for the Targets EBML element"""
+    def __init__(self, targettypevalue=50, targettype=None, trackUIDs=None, chapterUIDs=None, attachementUIDs=None, editionUIDs=None):
+        self.targettypevalue = targettypevalue
+        self.targettype = targettype
+        self.trackUIDs = trackUIDs if trackUIDs is not None else []
+        self.chapterUIDs = chapterUIDs if chapterUIDs is not None else []
+        self.attachementUIDs = attachementUIDs if attachementUIDs is not None else []
+        self.editionUIDs = editionUIDs if editionUIDs is not None else []
+
+    @classmethod
+    def fromelement(cls, element):
+        """Load the :class:`Targets` from an :class:`~enzyme.parsers.ebml.Element`
+
+        :param element: the Targets element
+        :type element: :class:`~enzyme.parsers.ebml.Element`
+
+        """
+        targettype = element.get('TargetType')
+        targettypevalue = element.get('TargetTypeValue', 50)
+        trackUIDs = element.get_all('TagTrackUID')
+        chapterUIDS = element.get_all('TagChapterUID')
+        attachementUIDs = element.get_all('TagAttachementUID')
+        editionUIDs = element.get_all('TagEditionUID')
+        return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachementUIDs, editionUIDs)
+
+    def __repr__(self):
+        return '<%s [%s, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, str(self.targettypevalue), self.targettype,
+                                                             sum([len(t) for t in [self.chapterUIDs, self.trackUIDs, self.editionUIDs, self.attachementUIDs]]))
+
+
 class SimpleTag(object):
     """Object for the SimpleTag EBML element"""
-    def __init__(self, name, language='und', default=True, string=None, binary=None):
+    def __init__(self, name, language='und', default=True, string=None, binary=None, simpletags=None):
         self.name = name
         self.language = language
         self.default = default
         self.string = string
         self.binary = binary
+        self.simpletags = simpletags if simpletags is not None else []
 
     @classmethod
     def fromelement(cls, element):
@@ -303,10 +338,14 @@ class SimpleTag(object):
         default = element.get('TagDefault', True)
         string = element.get('TagString')
         binary = element.get('TagBinary')
-        return cls(name, language, default, string, binary)
+        simpletags = [SimpleTag.fromelement(t) for t in element.get_master_elements()]
+        return cls(name, language, default, string, binary, simpletags)
 
     def __repr__(self):
-        return '<%s [%s, language=%s, default=%s, string=%s]>' % (self.__class__.__name__, self.name, self.language, self.default, self.string)
+        if len(self.simpletags) == 0:
+            return '<%s [%s, language=%s, default=%s, string=%s]>' % (self.__class__.__name__, self.name, self.language, self.default, self.string)
+        else:
+            return '<%s [%s, language=%s, default=%s, string=%s, simpletags=%r]>' % (self.__class__.__name__, self.name, self.language, self.default, self.string, self.simpletags)
 
 
 class Chapter(object):
@@ -318,17 +357,18 @@ class Chapter(object):
         are merged into the :class:`Chapter`
 
     """
-    def __init__(self, start, hidden=False, enabled=False, end=None, string=None, language=None):
+    def __init__(self, start, hidden=False, enabled=False, end=None, uid=None, string=None, language=None):
         self.start = start
         self.hidden = hidden
         self.enabled = enabled
         self.end = end
         self.string = string
         self.language = language
+        self.uid = uid
 
     @classmethod
     def fromelement(cls, element):
-        """Load the :class:`Chapter` from an :class:`~enzyme.parsers.ebml.Element`
+        """Load the :class:`Chapter` from a :class:`~enzyme.parsers.ebml.Element`
 
         :param element: the ChapterAtom element
         :type element: :class:`~enzyme.parsers.ebml.Element`
@@ -338,14 +378,15 @@ class Chapter(object):
         hidden = element.get('ChapterFlagHidden', False)
         enabled = element.get('ChapterFlagEnabled', True)
         end = element.get('ChapterTimeEnd')
+        uid = element.get('ChapterUID')
         chapterdisplays = [c for c in element if c.name == 'ChapterDisplay']
         if len(chapterdisplays) > 1:
             logger.warning('More than 1 (%d) ChapterDisplay element in the ChapterAtom, using the first one', len(chapterdisplays))
         if chapterdisplays:
             string = chapterdisplays[0].get('ChapString')
             language = chapterdisplays[0].get('ChapLanguage')
-            return cls(start, hidden, enabled, end, string, language)
-        return cls(start, hidden, enabled, end)
+            return cls(start, hidden, enabled, end, uid, string, language)
+        return cls(start, hidden, enabled, end, uid)
 
     def __repr__(self):
         return '<%s [%s, enabled=%s]>' % (self.__class__.__name__, self.start, self.enabled)
