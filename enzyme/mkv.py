@@ -3,6 +3,8 @@ from .exceptions import ParserError, MalformedMKVError
 from .parsers import ebml
 from datetime import timedelta
 from sys import getsizeof
+import xml.etree.ElementTree as xml
+from xml.dom import minidom
 import logging
 
 
@@ -94,6 +96,12 @@ class MKV(object):
             else:
                 logger.debug('Element %s ignored', element_name)
             self._parsed_positions.add(element_position)
+
+    def tags_to_xml(self):
+        root = xml.Element('Tags')
+        root.extend([tag.to_xml() for tag in self.tags])
+        reparsed = minidom.parseString(xml.tostring(root, 'utf-8'))
+        return reparsed.toprettyxml(indent="  ")
 
     def to_dict(self):
         return {'info': self.info.__dict__, 'video_tracks': [t.__dict__ for t in self.video_tracks],
@@ -285,6 +293,12 @@ class Tag(object):
         simpletags = [SimpleTag.fromelement(s) for s in element if s.name == 'SimpleTag']
         return cls(targets, simpletags)
 
+    def to_xml(self):
+        root = xml.Element('Tag')
+        root.append(self.targets.to_xml())
+        root.extend([simtag.to_xml() for simtag in self.simpletags])
+        return root
+
     def __repr__(self):
         return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)
 
@@ -314,6 +328,22 @@ class Targets(object):
         attachmentUIDs = element.get_all('TagAttachmentUID')
         editionUIDs = element.get_all('TagEditionUID')
         return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachmentUIDs, editionUIDs)
+
+    def to_xml(self):
+        root = xml.Element('Targets')
+        if self.targettypevalue is not None:
+            xml.SubElement(root, 'TargetTypeValue').text = str(self.targettypevalue)
+        if self.targettype is not None:
+            xml.Subelement(root, 'TargetType').text = self.targettype
+        for uids in self.trackUIDs:
+            xml.SubElement(root, 'TrackUID').text = str(uids)
+        for uids in self.chapterUIDs:
+            xml.SubElement(root, 'ChapterUID').text = str(uids)
+        for uids in self.attachementUIDs:
+            xml.SubElement(root, 'AttachmentUID').text = str(uids)
+        for uids in self.editionUIDs:
+            xml.SubElement(root, 'EditionUID').text = str(uids)
+        return root
 
     def __repr__(self):
         return '<%s [%s, targettype=%s, %d target UIDs]>' % (self.__class__.__name__, str(self.targettypevalue), self.targettype,
@@ -345,6 +375,18 @@ class SimpleTag(object):
         binary = element.get('TagBinary')
         simpletags = [SimpleTag.fromelement(t) for t in element.get_master_elements()]
         return cls(name, language, default, string, binary, simpletags)
+
+    def to_xml(self):
+        root = xml.Element('Simple')
+        xml.SubElement(root, 'Name').text = self.name
+        xml.SubElement(root, 'TagLanguage').text = self.language
+        xml.SubElement(root, 'DefaultLanguage').text = str(int(self.default))
+        if self.string is not None:
+            xml.SubElement(root, 'String').text = self.string
+        if self.binary is not None:
+            xml.SubElement(root, 'Binary').text = str(int(self.binary))
+        root.extend([simtag.to_xml() for simtag in self.simpletags])
+        return root
 
     def __repr__(self):
         if len(self.simpletags) == 0:
