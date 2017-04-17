@@ -4,7 +4,6 @@ from .parsers import ebml
 from datetime import timedelta
 from sys import getsizeof
 import xml.etree.ElementTree as xml
-from xml.dom import minidom
 import logging
 
 
@@ -100,8 +99,7 @@ class MKV(object):
     def tags_to_xml(self):
         root = xml.Element('Tags')
         root.extend([tag.to_xml() for tag in self.tags])
-        reparsed = minidom.parseString(xml.tostring(root, 'utf-8'))
-        return reparsed.toprettyxml(indent="  ")
+        return root
 
     def to_dict(self):
         return {'info': self.info.__dict__, 'video_tracks': [t.__dict__ for t in self.video_tracks],
@@ -339,7 +337,7 @@ class Targets(object):
             xml.SubElement(root, 'TrackUID').text = str(uids)
         for uids in self.chapterUIDs:
             xml.SubElement(root, 'ChapterUID').text = str(uids)
-        for uids in self.attachementUIDs:
+        for uids in self.attachmentUIDs:
             xml.SubElement(root, 'AttachmentUID').text = str(uids)
         for uids in self.editionUIDs:
             xml.SubElement(root, 'EditionUID').text = str(uids)
@@ -379,8 +377,8 @@ class SimpleTag(object):
     def to_xml(self):
         root = xml.Element('Simple')
         xml.SubElement(root, 'Name').text = self.name
-        xml.SubElement(root, 'TagLanguage').text = self.language
-        xml.SubElement(root, 'DefaultLanguage').text = str(int(self.default))
+        if self.language != 'und' : xml.SubElement(root, 'TagLanguage').text = self.language
+        if not self.default: xml.SubElement(root, 'DefaultLanguage').text = str(int(self.default))
         if self.string is not None:
             xml.SubElement(root, 'String').text = self.string
         if self.binary is not None:
