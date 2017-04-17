@@ -7,7 +7,7 @@ import logging
 
 
 __all__ = ['VIDEO_TRACK', 'AUDIO_TRACK', 'SUBTITLE_TRACK', 'MKV', 'Info', 'Track', 'VideoTrack',
-           'AudioTrack', 'SubtitleTrack', 'Tag', 'SimpleTag', 'Chapter']
+           'AudioTrack', 'SubtitleTrack', 'Tag', 'SimpleTag', 'Chapter', 'Attachment']
 logger = logging.getLogger(__name__)
 
 
