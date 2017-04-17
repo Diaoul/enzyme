@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta, datetime
-from enzyme.mkv import MKV, VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK
 import io
 import os.path
+from enzyme.mkv import MKV, VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK
 import requests
 import unittest
 import zipfile
+import xml.etree.ElementTree as xml
 from sys import getsizeof
 
 
@@ -94,6 +95,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test1-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test2(self):
         with io.open(os.path.join(TEST_DIR, 'test2.mkv'), 'rb') as stream:
@@ -163,6 +170,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test2-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test3(self):
         with io.open(os.path.join(TEST_DIR, 'test3.mkv'), 'rb') as stream:
@@ -232,6 +245,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 3, header stripping on the video track and no SimpleBlock')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test3-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test5(self):
         with io.open(os.path.join(TEST_DIR, 'test5.mkv'), 'rb') as stream:
@@ -396,6 +415,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test5-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test6(self):
         with io.open(os.path.join(TEST_DIR, 'test6.mkv'), 'rb') as stream:
@@ -465,6 +490,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test6-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test7(self):
         with io.open(os.path.join(TEST_DIR, 'test7.mkv'), 'rb') as stream:
@@ -534,6 +565,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test7-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test8(self):
         with io.open(os.path.join(TEST_DIR, 'test8.mkv'), 'rb') as stream:
@@ -603,6 +640,12 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test8-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_cover_art(self):
         with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
@@ -662,7 +705,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.tags[0].targets.chapterUIDs) == 0)
         self.assertTrue(len(mkv.tags[0].targets.trackUIDs) == 0)
         self.assertTrue(len(mkv.tags[0].targets.editionUIDs) == 0)
-        self.assertTrue(len(mkv.tags[0].targets.attachementUIDs) == 0)
+        self.assertTrue(len(mkv.tags[0].targets.attachmentUIDs) == 0)
         self.assertTrue(len(mkv.tags[0].simpletags) == 2)
         self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
         self.assertTrue(mkv.tags[0].simpletags[0].default == True)
@@ -686,7 +729,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.tags[1].targets.chapterUIDs) == 0)
         self.assertTrue(len(mkv.tags[1].targets.trackUIDs) == 0)
         self.assertTrue(len(mkv.tags[1].targets.editionUIDs) == 0)
-        self.assertTrue(len(mkv.tags[1].targets.attachementUIDs) == 0)
+        self.assertTrue(len(mkv.tags[1].targets.attachmentUIDs) == 0)
         self.assertTrue(len(mkv.tags[1].simpletags) == 2)
         self.assertTrue(mkv.tags[1].simpletags[0].name == 'PART_NUMBER')
         self.assertTrue(mkv.tags[1].simpletags[0].default == True)
@@ -764,4 +807,5 @@ def suite():
     return suite
 
 if __name__ == '__main__':
+    print('running tests')
     unittest.TextTestRunner().run(suite())
