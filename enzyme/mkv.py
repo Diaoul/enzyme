@@ -413,7 +413,7 @@ class Chapter(object):
 
     @classmethod
     def fromelement(cls, element):
-        """Load the :class:`Chapter` from an :class:`~enzyme.parsers.ebml.Element`
+        """Load the :class:`Chapter` from a :class:`~enzyme.parsers.ebml.Element`
 
         :param element: the ChapterAtom element
         :type element: :class:`~enzyme.parsers.ebml.Element`
