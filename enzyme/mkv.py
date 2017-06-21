@@ -22,7 +22,7 @@ class MKV(object):
     :param stream: seekable file-like object
 
     """
-    def __init__(self, stream, recurse_seek_head=False):
+    def __init__(self, stream, recurse_seek_head=False, load_attachments=True):
         # default attributes
         self.info = None
         self.video_tracks = []
@@ -53,11 +53,11 @@ class MKV(object):
             if seek_head.name != 'SeekHead':
                 raise MalformedMKVError('No SeekHead found')
             seek_head.load(stream, specs, ignore_element_names=['Void', 'CRC-32'])
-            self._parse_seekhead(seek_head, segment, stream, specs)
+            self._parse_seekhead(seek_head, segment, stream, specs, load_attachments)
         except ParserError as e:
             raise MalformedMKVError('Parsing error: %s' % e)
 
-    def _parse_seekhead(self, seek_head, segment, stream, specs):
+    def _parse_seekhead(self, seek_head, segment, stream, specs, load_attachments):
         for seek in seek_head:
             element_id = ebml.read_element_id(seek['SeekID'].data)
             element_name = specs[element_id][1]
@@ -87,7 +87,7 @@ class MKV(object):
             elif element_name == 'Attachments':
                 logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
                 stream.seek(element_position)
-                self.attachments.extend([Attachment.fromelement(t) for t in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])])
+                self.attachments.extend([Attachment.fromelement(t, load_attachments) for t in ebml.parse_element(stream, specs, True, ignore_element_names=['Void', 'CRC-32'])])
             elif element_name == 'SeekHead' and self.recurse_seek_head:
                 logger.info('Processing element %s from SeekHead at position %d', element_name, element_position)
                 stream.seek(element_position)
@@ -104,7 +104,13 @@ class MKV(object):
     def to_dict(self):
         return {'info': self.info.__dict__, 'video_tracks': [t.__dict__ for t in self.video_tracks],
                 'audio_tracks': [t.__dict__ for t in self.audio_tracks], 'subtitle_tracks': [t.__dict__ for t in self.subtitle_tracks],
-                'chapters': [c.__dict__ for c in self.chapters], 'tags': [t.__dict__ for t in self.tags]}
+                'chapters': [c.__dict__ for c in self.chapters], 'tags': [t.to_dict() for t in self.tags], 'attachments':  [a.to_dict() for a in self.attachments]}
+
+    def __getitem__(self, targettype):
+        if isinstance(targettype, str):
+            return [tag for tag in self.tags if tag.targets.targettype == targettype]
+        else:
+            return [tag for tag in self.tags if tag.targets.targettypevalue == targettype]
 
     def __repr__(self):
         return '<%s [%r, %r, %r, %r, %d tags, %d attachments]>' % (self.__class__.__name__, self.info, self.video_tracks, self.audio_tracks, self.subtitle_tracks, len(self.tags), len(self.attachments))
@@ -276,7 +282,7 @@ class SubtitleTrack(Track):
 class Tag(object):
     """Object for the Tag EBML element"""
     def __init__(self, targets=None, simpletags=None):
-        self.targets = targets if targets is not None else []
+        self.targets = targets
         self.simpletags = simpletags if simpletags is not None else []
 
     @classmethod
@@ -291,11 +297,22 @@ class Tag(object):
         simpletags = [SimpleTag.fromelement(s) for s in element if s.name == 'SimpleTag']
         return cls(targets, simpletags)
 
+    def __getitem__(self, tagName):
+        return [st for st in self.simpletags if st.name == tagName]
+
     def to_xml(self):
         root = xml.Element('Tag')
         root.append(self.targets.to_xml())
         root.extend([simtag.to_xml() for simtag in self.simpletags])
         return root
+
+    def to_dict(self):
+        return {'targets':self.targets.__dict__, 'simpletags':[st.to_dict() for st in self.simpletags]}
+
+    def __truediv__(self, other):
+        if isinstance(other, SimpleTag):
+            self.simpletags.append(other)
+        return other
 
     def __repr__(self):
         return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)
@@ -348,7 +365,7 @@ class Targets(object):
                                                              sum([len(t) for t in [self.chapterUIDs, self.trackUIDs, self.editionUIDs, self.attachmentUIDs]]))
 
 
-class SimpleTag(object):
+class SimpleTag(Tag):
     """Object for the SimpleTag EBML element"""
     def __init__(self, name, language='und', default=True, string=None, binary=None, simpletags=None):
         self.name = name
@@ -385,6 +402,11 @@ class SimpleTag(object):
             xml.SubElement(root, 'Binary').text = str(int(self.binary))
         root.extend([simtag.to_xml() for simtag in self.simpletags])
         return root
+
+    def to_dict(self):
+        stag_dict = self.__dict__.copy()
+        stag_dict['simpletags'] = [st.to_dict() for st in self.simpletags]
+        return stag_dict
 
     def __repr__(self):
         if len(self.simpletags) == 0:
@@ -447,20 +469,28 @@ class Attachment(object):
         self.data = data
 
     @classmethod
-    def fromelement(cls, element):
+    def fromelement(cls, element, load_attachment=True):
         """Load the :class:`Attachment` from a :class:`~enzyme.parsers.ebml.Element`
 
         :param element: the Attachedfile element element
         :type element: :class:`~enzyme.parsers.ebml.Element`
-
+        :param load_attachment: whether to load the attachment data or not (Default : true)
+        :type load_attachment: :class:str
         """
         description = element.get('FileDescription')
         name = element.get('FileName')
         mime_type = element.get('FileMimeType')
         uid = element.get('FileUID')
-        data = element.get('FileData', None)
-
+        if load_attachment:
+            data = element.get('FileData', None)
+        else:
+            data = None
         return cls(description, name, mime_type, uid, data)
+
+    def to_dict(self):
+        att_dict = self.__dict__.copy()
+        att_dict['data'] = None if self.data is None else self.data.read()
+        return att_dict
 
     def __repr__(self):
         return '<%s [%s, type=%s, %d KB]>' % (self.__class__.__name__, self.description if not self.description == '' else self.name, self.mime_type, getsizeof(self.data)/1000)
