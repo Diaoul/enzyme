@@ -2,7 +2,7 @@
 from datetime import timedelta, datetime
 import io
 import os.path
-from enzyme.mkv import MKV, VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK
+from enzyme.mkv import MKV, VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK, SimpleTag
 import requests
 import unittest
 import zipfile
@@ -95,6 +95,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        self.assertTrue(mkv[50][0]['TITLE'][0] == mkv.tags[0].simpletags[0])
         # tags to xml
         with io.open(os.path.join(TEST_DIR, 'test1-tag.xml'), 'r') as xmlfile:
             xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
@@ -799,6 +800,41 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.attachments[3].description is None)
         self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
         self.assertTrue(getsizeof(mkv.attachments[3].data) == 16542)
+
+        # SimpleTag addition and bracket-access
+        # Here, only testing some cases, not all values
+        self.assertTrue(mkv[50][0]['SAMPLE'][0]['TITLE'][0].string == 'Trailer')
+        self.assertTrue(mkv[70][0]['COPYRIGHT'][0]['URL'][0].default)
+
+        newSimpleTag = mkv[60][0] / SimpleTag('TITLE', string='Title')
+        self.assertTrue(mkv[60][0]['TITLE'][0].string == 'Title')
+        self.assertTrue(newSimpleTag.default)
+
+    def test_cover_art_no_attachments(self):
+        with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
+            mkv = MKV(stream, load_attachment=False)
+        # attachments
+        self.assertTrue(len(mkv.attachments) == 4)
+        # attachment 0
+        self.assertTrue(mkv.attachments[0].name == 'cover.jpg')
+        self.assertTrue(mkv.attachments[0].description is None)
+        self.assertTrue(mkv.attachments[0].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[0].data is None)
+        # attachment 1
+        self.assertTrue(mkv.attachments[1].name == 'small_cover.jpg')
+        self.assertTrue(mkv.attachments[1].description is None)
+        self.assertTrue(mkv.attachments[1].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[1].data is None)
+        # attachment 2
+        self.assertTrue(mkv.attachments[2].name == 'cover_land.jpg')
+        self.assertTrue(mkv.attachments[2].description is None)
+        self.assertTrue(mkv.attachments[2].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[2].data is None)
+        # attachment 3
+        self.assertTrue(mkv.attachments[3].name == 'small_cover_land.jpg')
+        self.assertTrue(mkv.attachments[3].description is None)
+        self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[3].data is None)
 
 
 def suite():
