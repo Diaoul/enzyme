@@ -788,6 +788,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.attachments[0].name == 'cover.jpg')
         self.assertTrue(mkv.attachments[0].description is None)
         self.assertTrue(mkv.attachments[0].mime_type == 'image/jpeg')
+        print(getsizeof(mkv.attachments[0].data))
         self.assertTrue(getsizeof(mkv.attachments[0].data) == 133029)
         # attachment 1
         self.assertTrue(mkv.attachments[1].name == 'small_cover.jpg')
