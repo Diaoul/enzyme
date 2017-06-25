@@ -366,7 +366,7 @@ class Tag(object):
     def __div__(self, other):
         """Same as __truediv__ for Python2 compatibility
         """
-        return self.__truediv__(self, other)
+        return self.__truediv__(other)
 
     def __repr__(self):
         return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)
