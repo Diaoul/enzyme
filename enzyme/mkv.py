@@ -324,7 +324,7 @@ class Tag(object):
 
     @classmethod
     def fromXML(cls, xmlElement):
-         """Load the :class:`Tag` from an :class:`xml.etree.ElementTree.Element`
+        """Load the :class:`Tag` from an :class:`xml.etree.ElementTree.Element`
 
         :param xmlElement: the Tag XML element
         :type xmlElement: :class:`xml.etree.ElementTree.Element`
@@ -354,7 +354,7 @@ class Tag(object):
     def to_dict(self):
         """Return a serilizable dict from the :class:`Tag`
         """
-        return {'targets':self.targets.__dict__, 'simpletags':[st.to_dict() for st in self.simpletags]}
+        return {'targets': self.targets.__dict__, 'simpletags': [st.to_dict() for st in self.simpletags]}
 
     def __truediv__(self, other):
         """Append the other :class:`SimpleTag` to self and return the other.
@@ -370,7 +370,7 @@ class Tag(object):
 class Targets(object):
     """Object for the Targets EBML element"""
     def __init__(self, targettypevalue=50, targettype=None, trackUIDs=None, chapterUIDs=None, attachmentUIDs=None, editionUIDs=None):
-        self.targettypevalue = targettypevalue
+        self.targettypevalue = int(targettypevalue)
         self.targettype = targettype
         self.trackUIDs = trackUIDs if trackUIDs is not None else []
         self.chapterUIDs = chapterUIDs if chapterUIDs is not None else []
@@ -388,14 +388,14 @@ class Targets(object):
         targettype = element.get('TargetType')
         targettypevalue = element.get('TargetTypeValue', 50)
         trackUIDs = element.get_all('TagTrackUID')
-        chapterUIDS = element.get_all('TagChapterUID')
+        chapterUIDs = element.get_all('TagChapterUID')
         attachmentUIDs = element.get_all('TagAttachmentUID')
         editionUIDs = element.get_all('TagEditionUID')
-        return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachmentUIDs, editionUIDs)
+        return cls(targettypevalue, targettype, trackUIDs, chapterUIDs, attachmentUIDs, editionUIDs)
 
     @classmethod
     def fromXML(cls, xmlElement):
-         """Load the :class:`Targets` from an :class:`xml.etree.ElementTree.Element`
+        """Load the :class:`Targets` from an :class:`xml.etree.ElementTree.Element`
 
         :param xmlElement: the Targets XML element
         :type xmlElement: :class:`xml.etree.ElementTree.Element`
@@ -407,7 +407,7 @@ class Targets(object):
         chapterUIDs = None if xmlElement.find('ChapterUID') is None else xmlElement.find('ChapterUID').text
         attachmentUIDs = None if xmlElement.find('AttachmentUID') is None else xmlElement.find('AttachmentUID').text
         editionUIDs = None if xmlElement.find('EditionUID') is None else xmlElement.find('EditionUID').text
-        return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachmentUIDs, editionUIDs)
+        return cls(targettypevalue, targettype, trackUIDs, chapterUIDs, attachmentUIDs, editionUIDs)
 
     def to_xml(self):
         """Return a :class:`xml.etree.ElementTree.Element` from the :class:`Targets`
@@ -473,7 +473,7 @@ class SimpleTag(Tag):
         binary = None if xmlElement.find('Binary') is None else xmlElement.find('Binary').text
         simpletags = [SimpleTag.fromXML(s) for s in xmlElement.findall('Simple')]
         return cls(name, language, default, string, binary, simpletags)
-  
+
     def to_xml(self):
         """Return a :class:`xml.etree.ElementTree.Element` from the :class:`SimpleTag`
         """
