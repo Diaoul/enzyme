@@ -812,7 +812,7 @@ class MKVTestCase(unittest.TestCase):
 
     def test_cover_art_no_attachments(self):
         with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
-            mkv = MKV(stream, load_attachment=False)
+            mkv = MKV(stream, load_attachments=False)
         # attachments
         self.assertTrue(len(mkv.attachments) == 4)
         # attachment 0
