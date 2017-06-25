@@ -77,31 +77,35 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
         # chapters
         self.assertTrue(len(mkv.chapters) == 0)
-        # tags
-        self.assertTrue(len(mkv.tags) == 1)
-        self.assertTrue(len(mkv.tags[0].simpletags) == 3)
-        self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
-        self.assertTrue(mkv.tags[0].simpletags[0].default == True)
-        self.assertTrue(mkv.tags[0].simpletags[0].language == 'und')
-        self.assertTrue(mkv.tags[0].simpletags[0].string == 'Big Buck Bunny - test 1')
-        self.assertTrue(mkv.tags[0].simpletags[0].binary is None)
-        self.assertTrue(mkv.tags[0].simpletags[1].name == 'DATE_RELEASED')
-        self.assertTrue(mkv.tags[0].simpletags[1].default == True)
-        self.assertTrue(mkv.tags[0].simpletags[1].language == 'und')
-        self.assertTrue(mkv.tags[0].simpletags[1].string == '2010')
-        self.assertTrue(mkv.tags[0].simpletags[1].binary is None)
-        self.assertTrue(mkv.tags[0].simpletags[2].name == 'COMMENT')
-        self.assertTrue(mkv.tags[0].simpletags[2].default == True)
-        self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
-        self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock')
-        self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
-        self.assertTrue(mkv[50][0]['TITLE'][0] == mkv.tags[0].simpletags[0])
         # tags to xml
         with io.open(os.path.join(TEST_DIR, 'test1-tag.xml'), 'r') as xmlfile:
-            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
-        expectedXML = xml.tostring(xml.fromstring(xmlString))
+            xmlElement = xml.fromstring(''.join([line.strip() for line in xmlfile.readlines()]))
+        expectedXML = xml.tostring(xmlElement)
         actualXML = xml.tostring(mkv.tags_to_xml())
         self.assertEqual(expectedXML, actualXML)
+        # tags normal and fromXML
+        for i in range(2):
+            self.assertTrue(len(mkv.tags) == 1)
+            self.assertTrue(len(mkv.tags[0].simpletags) == 3)
+            self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
+            self.assertTrue(mkv.tags[0].simpletags[0].default == True)
+            self.assertTrue(mkv.tags[0].simpletags[0].language == 'und')
+            self.assertTrue(mkv.tags[0].simpletags[0].string == 'Big Buck Bunny - test 1')
+            self.assertTrue(mkv.tags[0].simpletags[0].binary is None)
+            self.assertTrue(mkv.tags[0].simpletags[1].name == 'DATE_RELEASED')
+            self.assertTrue(mkv.tags[0].simpletags[1].default == True)
+            self.assertTrue(mkv.tags[0].simpletags[1].language == 'und')
+            self.assertTrue(mkv.tags[0].simpletags[1].string == '2010')
+            self.assertTrue(mkv.tags[0].simpletags[1].binary is None)
+            self.assertTrue(mkv.tags[0].simpletags[2].name == 'COMMENT')
+            self.assertTrue(mkv.tags[0].simpletags[2].default == True)
+            self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
+            self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock')
+            self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+            self.assertTrue(mkv[50][0]['TITLE'][0] == mkv.tags[0].simpletags[0])
+            if i == 0:
+                mkv.tags = [] # Empty the tags
+                mkv.tags_from_xml(xmlElement)   # Fill the tags with the xmlElement from file, loop
 
     def test_test2(self):
         with io.open(os.path.join(TEST_DIR, 'test2.mkv'), 'rb') as stream:
