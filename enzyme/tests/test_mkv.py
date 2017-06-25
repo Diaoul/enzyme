@@ -803,7 +803,8 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.attachments[3].name == 'small_cover_land.jpg')
         self.assertTrue(mkv.attachments[3].description is None)
         self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
-        self.assertTrue(getsizeof(mkv.attachments[3].data)//1000 == 166)
+        print(getsizeof(mkv.attachments[3].data)//1000)
+        self.assertTrue(getsizeof(mkv.attachments[3].data)//1000 == 16)
 
         # SimpleTag addition and bracket-access
         # Here, only testing some cases, not all values
