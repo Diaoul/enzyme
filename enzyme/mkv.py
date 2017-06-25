@@ -18,11 +18,14 @@ VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK = 0x01, 0x02, 0x11
 
 class MKV(object):
     """Matroska Video file
-
-    :param stream: seekable file-like object
-
     """
     def __init__(self, stream, recurse_seek_head=False, load_attachments=True):
+        """Load a :class:`MKV` from a stream (binary opened ('rb') file)
+
+            :param stream: seekable file-like object
+            :param recurse_seak_head: Whether to load recursive SeekHead elements, default False
+            :param load_attachments: Wheter to load attachments' data, default True
+        """
         # default attributes
         self.info = None
         self.video_tracks = []
@@ -97,19 +100,41 @@ class MKV(object):
             self._parsed_positions.add(element_position)
 
     def tags_to_xml(self):
+        """Return a :class:`xml.etree.ElementTree.Element` from all the tags in self
+           Useful for updating to the file changed tags with mkvpropedit
+        """
         root = xml.Element('Tags')
         root.extend([tag.to_xml() for tag in self.tags])
         return root
 
+    def tags_from_xml(self, tagsElement):
+        """Load all :class:`Tag` in self.tags from a :class:`xml.etree.ElementTree.Element`
+           Useful for creating MKV-like objects from non-mkv files or reading modified but not saved tags from xml files
+
+           :param tagsElement: The XML element containing the tag structure
+           :type tagsElement: :class:`xml.etree.ElementTree.Element`
+        """
+        for tagElement in tagsElement:
+            self.tags.append(Tag.fromXML(tagElement))
+
     def to_dict(self):
+        """Return a serializable dictionary from self
+           The returned dictionary is json-able.
+        """
         return {'info': self.info.__dict__, 'video_tracks': [t.__dict__ for t in self.video_tracks],
                 'audio_tracks': [t.__dict__ for t in self.audio_tracks], 'subtitle_tracks': [t.__dict__ for t in self.subtitle_tracks],
                 'chapters': [c.__dict__ for c in self.chapters], 'tags': [t.to_dict() for t in self.tags], 'attachments':  [a.to_dict() for a in self.attachments]}
 
     def __getitem__(self, targettype):
-        if isinstance(targettype, str):
+        """Return a list of all :class:`Tag` in self which have :class:`Targets` with the requested targettype or targettypevalue
+           Return a list even if there is only one or no corresponding tags.
+
+           :param targettype: The TargetType or TargetTypeValue of tags to get
+           :type targettype: String or number
+        """
+        if isinstance(targettype, str):  # Then is is a targettype
             return [tag for tag in self.tags if tag.targets.targettype == targettype]
-        else:
+        else:  # Then it is a targettypevalue
             return [tag for tag in self.tags if tag.targets.targettypevalue == targettype]
 
     def __repr__(self):
@@ -297,19 +322,43 @@ class Tag(object):
         simpletags = [SimpleTag.fromelement(s) for s in element if s.name == 'SimpleTag']
         return cls(targets, simpletags)
 
+    @classmethod
+    def fromXML(cls, xmlElement):
+         """Load the :class:`Tag` from an :class:`xml.etree.ElementTree.Element`
+
+        :param xmlElement: the Tag XML element
+        :type xmlElement: :class:`xml.etree.ElementTree.Element`
+
+        """
+        targets = Targets.fromXML(xmlElement.find('Targets')) if xmlElement.find('Targets') else Targets()
+        simpletags = [SimpleTag.fromXML(s) for s in xmlElement.iterfind('Simple')]
+        return cls(targets, simpletags)
+
     def __getitem__(self, tagName):
+        """Return a list of all :class:`SimpleTag` in self which have the requested name
+           Return a list even if there is only one or no corresponding SimpleTags.
+
+           :param tagName: Name of the SimpleTags to return
+           :type tagName: string
+        """
         return [st for st in self.simpletags if st.name == tagName]
 
     def to_xml(self):
+        """Return a :class:`xml.etree.ElementTree.Element` from the :class:`Tag`
+        """
         root = xml.Element('Tag')
         root.append(self.targets.to_xml())
         root.extend([simtag.to_xml() for simtag in self.simpletags])
         return root
 
     def to_dict(self):
+        """Return a serilizable dict from the :class:`Tag`
+        """
         return {'targets':self.targets.__dict__, 'simpletags':[st.to_dict() for st in self.simpletags]}
 
     def __truediv__(self, other):
+        """Append the other :class:`SimpleTag` to self and return the other.
+        """
         if isinstance(other, SimpleTag):
             self.simpletags.append(other)
         return other
@@ -344,7 +393,25 @@ class Targets(object):
         editionUIDs = element.get_all('TagEditionUID')
         return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachmentUIDs, editionUIDs)
 
+    @classmethod
+    def fromXML(cls, xmlElement):
+         """Load the :class:`Targets` from an :class:`xml.etree.ElementTree.Element`
+
+        :param xmlElement: the Targets XML element
+        :type xmlElement: :class:`xml.etree.ElementTree.Element`
+
+        """
+        targettype = None if xmlElement.find('TargetType') is None else xmlElement.find('TargetType').text
+        targettypevalue = 50 if xmlElement.find('TargetTypeValue') is None else xmlElement.find('TargetTypeValue').text
+        trackUIDs = None if xmlElement.find('TrackUID') is None else xmlElement.find('TrackUID').text
+        chapterUIDs = None if xmlElement.find('ChapterUID') is None else xmlElement.find('ChapterUID').text
+        attachmentUIDs = None if xmlElement.find('AttachmentUID') is None else xmlElement.find('AttachmentUID').text
+        editionUIDs = None if xmlElement.find('EditionUID') is None else xmlElement.find('EditionUID').text
+        return cls(targettypevalue, targettype, trackUIDs, chapterUIDS, attachmentUIDs, editionUIDs)
+
     def to_xml(self):
+        """Return a :class:`xml.etree.ElementTree.Element` from the :class:`Targets`
+        """
         root = xml.Element('Targets')
         if self.targettypevalue is not None:
             xml.SubElement(root, 'TargetTypeValue').text = str(self.targettypevalue)
@@ -391,7 +458,25 @@ class SimpleTag(Tag):
         simpletags = [SimpleTag.fromelement(t) for t in element.get_master_elements()]
         return cls(name, language, default, string, binary, simpletags)
 
+    @classmethod
+    def fromXML(cls, xmlElement):
+        """Load the :class:`SimpleTag` from an :class:`xml.etree.ElementTree.Element`
+
+        :param xmlElement: the SimpleTag xml element
+        :type xmlElement: :class:`xml.etree.ElementTree.Element`
+
+        """
+        name = None if xmlElement.find('Name') is None else xmlElement.find('Name').text
+        language = 'und' if xmlElement.find('TagLanguage') is None else xmlElement.find('TagLanguage').text
+        default = True if xmlElement.find('DefaultLanguage') is None else xmlElement.find('DefaultLanguage').text
+        string = None if xmlElement.find('String') is None else xmlElement.find('String').text
+        binary = None if xmlElement.find('Binary') is None else xmlElement.find('Binary').text
+        simpletags = [SimpleTag.fromXML(s) for s in xmlElement.findall('Simple')]
+        return cls(name, language, default, string, binary, simpletags)
+  
     def to_xml(self):
+        """Return a :class:`xml.etree.ElementTree.Element` from the :class:`SimpleTag`
+        """
         root = xml.Element('Simple')
         xml.SubElement(root, 'Name').text = self.name
         if self.language != 'und' : xml.SubElement(root, 'TagLanguage').text = self.language
@@ -404,6 +489,8 @@ class SimpleTag(Tag):
         return root
 
     def to_dict(self):
+        """Return a serializable dict from the :class:`SimpleTag`
+        """
         stag_dict = self.__dict__.copy()
         stag_dict['simpletags'] = [st.to_dict() for st in self.simpletags]
         return stag_dict
@@ -488,6 +575,8 @@ class Attachment(object):
         return cls(description, name, mime_type, uid, data)
 
     def to_dict(self):
+        """Return a serializable dict from the :class:`Attachment`
+        """
         att_dict = self.__dict__.copy()
         att_dict['data'] = None if self.data is None else self.data.read()
         return att_dict
