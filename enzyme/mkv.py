@@ -143,7 +143,7 @@ class MKV(object):
 
 class Info(object):
     """Object for the Info EBML element"""
-    def __init__(self, uid, title=None, duration=None, date_utc=None, timecode_scale=None, muxing_app=None, writing_app=None):
+    def __init__(self, uid=None, title=None, duration=None, date_utc=None, timecode_scale=None, muxing_app=None, writing_app=None):
         self.uid = uid
         self.title = title
         self.duration = timedelta(microseconds=duration * (timecode_scale or 1000000) // 1000) if duration else None
