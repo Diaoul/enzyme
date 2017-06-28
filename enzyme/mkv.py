@@ -5,7 +5,7 @@ from datetime import timedelta
 from sys import getsizeof
 import xml.etree.ElementTree as xml
 import logging
-
+import binascii
 
 __all__ = ['VIDEO_TRACK', 'AUDIO_TRACK', 'SUBTITLE_TRACK', 'MKV', 'Info', 'Track', 'VideoTrack',
            'AudioTrack', 'SubtitleTrack', 'Tag', 'SimpleTag', 'Chapter', 'Attachment']
@@ -121,9 +121,9 @@ class MKV(object):
         """Return a serializable dictionary from self
            The returned dictionary is json-able.
         """
-        return {'info': self.info.__dict__, 'video_tracks': [t.__dict__ for t in self.video_tracks],
+        return {'info': self.info.to_dict(), 'video_tracks': [t.__dict__ for t in self.video_tracks],
                 'audio_tracks': [t.__dict__ for t in self.audio_tracks], 'subtitle_tracks': [t.__dict__ for t in self.subtitle_tracks],
-                'chapters': [c.__dict__ for c in self.chapters], 'tags': [t.to_dict() for t in self.tags], 'attachments':  [a.to_dict() for a in self.attachments]}
+                'chapters': [c.to_dict() for c in self.chapters], 'tags': [t.to_dict() for t in self.tags], 'attachments':  [a.to_dict() for a in self.attachments]}
 
     def __getitem__(self, targettype):
         """Return a list of all :class:`Tag` in self which have :class:`Targets` with the requested targettype or targettypevalue
@@ -143,7 +143,8 @@ class MKV(object):
 
 class Info(object):
     """Object for the Info EBML element"""
-    def __init__(self, title=None, duration=None, date_utc=None, timecode_scale=None, muxing_app=None, writing_app=None):
+    def __init__(self, uid, title=None, duration=None, date_utc=None, timecode_scale=None, muxing_app=None, writing_app=None):
+        self.uid = uid
         self.title = title
         self.duration = timedelta(microseconds=duration * (timecode_scale or 1000000) // 1000) if duration else None
         self.date_utc = date_utc
@@ -158,13 +159,20 @@ class Info(object):
         :type element: :class:`~enzyme.parsers.ebml.Element`
 
         """
+        uid = binascii.hexlify(element.get('SegmentUID').getvalue()).decode().upper()
         title = element.get('Title')
         duration = element.get('Duration')
         date_utc = element.get('DateUTC')
         timecode_scale = element.get('TimecodeScale')
         muxing_app = element.get('MuxingApp')
         writing_app = element.get('WritingApp')
-        return cls(title, duration, date_utc, timecode_scale, muxing_app, writing_app)
+        return cls(uid, title, duration, date_utc, timecode_scale, muxing_app, writing_app)
+
+    def to_dict(self):
+        info_dict = self.__dict__.copy()
+        info_dict['duration'] = self.duration.seconds + self.duration.microseconds/1e6
+        info_dict['date_utc'] = ('{0:%Y}-{0:%m}-{0:%d} {0:%H}:{0:%M}:{0:%S}:{0:%f}'.format(self.date_utc))[:-3],  # The official Mastroka date standard
+        return info_dict
 
     def __repr__(self):
         return '<%s [title=%r, duration=%s, date=%s]>' % (self.__class__.__name__, self.title, self.duration, self.date_utc)
@@ -330,7 +338,7 @@ class Tag(object):
         :type xmlElement: :class:`xml.etree.ElementTree.Element`
 
         """
-        targets = Targets.fromXML(xmlElement.find('Targets')) if xmlElement.find('Targets') else Targets()
+        targets = Targets() if xmlElement.find('Targets') is None else Targets.fromXML(xmlElement.find('Targets'))
         simpletags = [SimpleTag.fromXML(s) for s in xmlElement.iterfind('Simple')]
         return cls(targets, simpletags)
 
@@ -546,6 +554,11 @@ class Chapter(object):
             language = chapterdisplays[0].get('ChapLanguage')
             return cls(start, hidden, enabled, end, uid, string, language)
         return cls(start, hidden, enabled, end, uid)
+
+    def to_dict(self):
+        chap_dict = self.__dict__.copy()
+        chap_dict['start'] = self.start.seconds + self.start.microseconds/1e6
+        return chap_dict
 
     def __repr__(self):
         return '<%s [%s, enabled=%s]>' % (self.__class__.__name__, self.start, self.enabled)

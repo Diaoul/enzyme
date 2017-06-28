@@ -31,6 +31,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test1.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '922D19320F1E13C5B505630AAFD85336')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(minutes=1, seconds=27, milliseconds=336))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 7, 23, 3))
@@ -111,6 +112,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test2.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '92B2CE318A9650039C482D67AA55CB7B')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=47, milliseconds=509))
         self.assertTrue(mkv.info.date_utc == datetime(2011, 6, 2, 12, 45, 20))
@@ -186,6 +188,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test3.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '99499582DFAF06D4A676D2E64C02A507')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=49, milliseconds=64))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 21, 43, 25))
@@ -261,6 +264,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test5.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '9D516A0F927A12D286E1502D23D0FDB0')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=46, milliseconds=665))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 18, 6, 43))
@@ -431,6 +435,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test6.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '84FA5B60972A165B852766E7E5B0A283')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=87, milliseconds=336))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 16, 31, 55))
@@ -506,6 +511,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test7.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == 'B9821FA651B1E247B679260DD2E7E371')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=37, milliseconds=43))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 17, 0, 23))
@@ -581,6 +587,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test8.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '8A1E00BB51661380AF10D1FE09970B5D')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=47, milliseconds=341))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 17, 22, 14))
@@ -656,6 +663,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == 'A5FA3864646301558CD35CE3F7B1DADC')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=156))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 9, 23, 19, 1, 57))
@@ -803,7 +811,6 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.attachments[3].name == 'small_cover_land.jpg')
         self.assertTrue(mkv.attachments[3].description is None)
         self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
-        print(getsizeof(mkv.attachments[3].data)//1000)
         self.assertTrue(getsizeof(mkv.attachments[3].data)//1000 == 16)
 
         # SimpleTag addition and bracket-access
