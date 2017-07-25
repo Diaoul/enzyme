@@ -8,7 +8,7 @@ import logging
 import binascii
 
 __all__ = ['VIDEO_TRACK', 'AUDIO_TRACK', 'SUBTITLE_TRACK', 'MKV', 'Info', 'Track', 'VideoTrack',
-           'AudioTrack', 'SubtitleTrack', 'Tag', 'SimpleTag', 'Chapter', 'Attachment']
+           'AudioTrack', 'SubtitleTrack', 'Tag', 'Targets', 'SimpleTag', 'Chapter', 'Attachment']
 logger = logging.getLogger(__name__)
 
 
@@ -125,7 +125,7 @@ class MKV(object):
                 'audio_tracks': [t.__dict__ for t in self.audio_tracks], 'subtitle_tracks': [t.__dict__ for t in self.subtitle_tracks],
                 'chapters': [c.to_dict() for c in self.chapters], 'tags': [t.to_dict() for t in self.tags], 'attachments':  [a.to_dict() for a in self.attachments]}
 
-    def __getitem__(self, targettype):
+    def getTag(self, targettype):
         """Return a list of all :class:`Tag` in self which have :class:`Targets` with the requested targettype or targettypevalue
            Return a list even if there is only one or no corresponding tags.
 
@@ -363,18 +363,6 @@ class Tag(object):
         """Return a serilizable dict from the :class:`Tag`
         """
         return {'targets': self.targets.__dict__, 'simpletags': [st.to_dict() for st in self.simpletags]}
-
-    def __truediv__(self, other):
-        """Append the other :class:`SimpleTag` to self and return the other.
-        """
-        if isinstance(other, SimpleTag):
-            self.simpletags.append(other)
-        return other
-
-    def __div__(self, other):
-        """Same as __truediv__ for Python2 compatibility
-        """
-        return self.__truediv__(other)
 
     def __repr__(self):
         return '<%s [targets=%r, simpletags=%r]>' % (self.__class__.__name__, self.targets, self.simpletags)

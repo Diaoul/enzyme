@@ -103,7 +103,7 @@ class MKVTestCase(unittest.TestCase):
             self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
             self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock')
             self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
-            self.assertTrue(mkv[50][0]['TITLE'][0] == mkv.tags[0].simpletags[0])
+            self.assertTrue(mkv.getTag(50)[0]['TITLE'][0] == mkv.tags[0].simpletags[0])
             if i == 0:
                 mkv.tags = [] # Empty the tags
                 mkv.tags_from_xml(xmlElement)   # Fill the tags with the xmlElement from file, loop
@@ -813,14 +813,10 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
         self.assertTrue(getsizeof(mkv.attachments[3].data)//1000 == 16)
 
-        # SimpleTag addition and bracket-access
+        # SimpleTag bracket-access
         # Here, only testing some cases, not all values
-        self.assertTrue(mkv[50][0]['SAMPLE'][0]['TITLE'][0].string == 'Trailer')
-        self.assertTrue(mkv[70][0]['COPYRIGHT'][0]['URL'][0].default)
-
-        newSimpleTag = mkv[60][0] / SimpleTag('TITLE', string='Title')
-        self.assertTrue(mkv[60][0]['TITLE'][0].string == 'Title')
-        self.assertTrue(newSimpleTag.default)
+        self.assertTrue(mkv.getTag(50)[0]['SAMPLE'][0]['TITLE'][0].string == 'Trailer')
+        self.assertTrue(mkv.getTag(70)[0]['COPYRIGHT'][0]['URL'][0].default)
 
     def test_cover_art_no_attachments(self):
         with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
