@@ -201,7 +201,7 @@ class VideoTrack(Track):
         videotrack.width = element['Video'].get('PixelWidth', 0)
         videotrack.height = element['Video'].get('PixelHeight', 0)
         videotrack.interlaced = bool(element['Video'].get('FlagInterlaced', False))
-        videotrack.stereo_mode = element['Video'].get('StereoMode', False)
+        videotrack.stereo_mode = element['Video'].get('StereoMode', 0)
         videotrack.crop = {}
         if 'PixelCropTop' in element['Video']:
             videotrack.crop['top'] = element['Video']['PixelCropTop']
@@ -214,7 +214,7 @@ class VideoTrack(Track):
         videotrack.display_unit = element['Video'].get('DisplayUnit')
         videotrack.display_width = element['Video'].get('DisplayWidth')
         videotrack.display_height = element['Video'].get('DisplayHeight')
-        videotrack.aspect_ratio_type = element['Video'].get('AspectRatioType', False)
+        videotrack.aspect_ratio_type = element['Video'].get('AspectRatioType', 0)
         return videotrack
 
     def __repr__(self):
