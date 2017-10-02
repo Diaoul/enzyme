@@ -417,7 +417,7 @@ class Targets(object):
         if self.targettypevalue is not None:
             xml.SubElement(root, 'TargetTypeValue').text = str(self.targettypevalue)
         if self.targettype is not None:
-            xml.Subelement(root, 'TargetType').text = self.targettype
+            xml.SubElement(root, 'TargetType').text = self.targettype
         for uids in self.trackUIDs:
             xml.SubElement(root, 'TrackUID').text = str(uids)
         for uids in self.chapterUIDs:
