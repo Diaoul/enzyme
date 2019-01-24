@@ -200,7 +200,8 @@ class VideoTrack(Track):
         videotrack = super(VideoTrack, cls).fromelement(element)
         videotrack.width = element['Video'].get('PixelWidth', 0)
         videotrack.height = element['Video'].get('PixelHeight', 0)
-        videotrack.interlaced = bool(element['Video'].get('FlagInterlaced', False))
+        # videotrack.interlaced = bool(element['Video'].get('FlagInterlaced', False))
+        videotrack.interlaced = True if element['Video'].get('FlagInterlaced', 0) == 1 else False
         videotrack.stereo_mode = element['Video'].get('StereoMode')
         videotrack.crop = {}
         if 'PixelCropTop' in element['Video']:
