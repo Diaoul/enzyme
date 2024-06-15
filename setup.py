@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
+tests_requirements = ['requests', 'PyYAML']
 
 setup(name='enzyme',
     version='0.4.2-dev',
@@ -18,12 +19,14 @@ setup(name='enzyme',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Multimedia :: Video',
         'Topic :: Software Development :: Libraries :: Python Modules'],
+    python_requires="<3.12,>=3.8",
     test_suite='enzyme.tests.suite',
-    tests_require=['requests', 'PyYAML'])
+    tests_require=tests_requirements,
+    extras_require={'test': tests_requirements})

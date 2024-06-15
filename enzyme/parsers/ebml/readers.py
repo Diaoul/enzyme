@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from ...compat import bytes
 from ...exceptions import ReadError, SizeError
 from datetime import datetime, timedelta
 from io import BytesIO
