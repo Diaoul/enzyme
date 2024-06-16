@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enzyme"
+description = "Python video metadata parser"
+requires-python = ">=3.8,<3.12"
+license = { file = "LICENSE" }
+keywords = ["parser", "video", "metadata", "mkv"]
+authors = [{ name = "Antoine Bertin", email = "diaoulael@gmail.com" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dynamic = ["version", "readme"]
+
+[project.optional-dependencies]
+docs = ["sphinx"]
+test = ["PyYAML", "requests"]
+dev = ["tox"]
+
+[project.urls]
+homepage = "https://github.com/Diaoul/enzyme"
+repository = "https://github.com/Diaoul/enzyme"
+documentation = "https://enzyme.readthedocs.io"
+
+[tool.setuptools.dynamic]
+version = { attr = "enzyme.__version__" }
+readme = { file = ["README.rst", "HISTORY.rst"] }

@@ -4,6 +4,6 @@ python:
   - 3.9
   - 3.10
   - 3.11
-script: python setup.py test
+script: python -m unittest
 notifications:
   irc: "irc.freenode.org#enzyme"
