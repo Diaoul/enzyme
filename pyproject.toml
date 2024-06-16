@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "enzyme"
 description = "Python video metadata parser"
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8"
 license = { file = "LICENSE" }
 keywords = ["parser", "video", "metadata", "mkv"]
 authors = [{ name = "Antoine Bertin", email = "diaoulael@gmail.com" }]
@@ -19,10 +19,14 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Multimedia :: Video",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dynamic = ["version", "readme"]
+dependencies = [
+    "importlib_resources>=4.6; python_version=='3.8'"
+]
 
 [project.optional-dependencies]
 docs = ["sphinx"]

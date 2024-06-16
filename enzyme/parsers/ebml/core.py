@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
 from ...exceptions import ReadError
 from .readers import *
-from pkg_resources import resource_stream  # @UnresolvedImport
 from xml.dom import minidom
 import logging
 
+try:
+    from importlib.resources import files
+except ImportError:
+    from importlib_resources import files  # type: ignore[assignment,no-redef,import-not-found]
 
 __all__ = ['INTEGER', 'UINTEGER', 'FLOAT', 'STRING', 'UNICODE', 'DATE', 'MASTER', 'BINARY',
            'SPEC_TYPES', 'READERS', 'Element', 'MasterElement', 'parse', 'parse_element',
@@ -231,7 +233,8 @@ def get_matroska_specs(webm_only=False):
 
     """
     specs = {}
-    with resource_stream(__name__, 'specs/matroska.xml') as resource:
+    spec_file = files(__package__).joinpath('specs', 'matroska.xml')
+    with spec_file.open('rb') as resource:
         xmldoc = minidom.parse(resource)
         for element in xmldoc.getElementsByTagName('element'):
             if not webm_only or element.hasAttribute('webm') and element.getAttribute('webm') == '1':
