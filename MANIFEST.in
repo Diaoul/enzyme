@@ -1,8 +1,0 @@
-include LICENSE
-include HISTORY.rst
-include tox.ini
-include enzyme/parsers/ebml/specs/matroska.xml
-include enzyme/tests/parsers/ebml/test1.mkv.yml
-
-graft docs
-

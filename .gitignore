@@ -1,38 +1,71 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
 *.py[cod]
+*$py.class
 
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
 .installed.cfg
-lib
-lib64
-__pycache__
+*.egg
+MANIFEST
 
-# Tests
+# Unit test / coverage reports
+htmlcov/
 .tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
 
-# Installer logs
-pip-log.txt
+# Sphinx documentation
+docs/_build/
 
-# PyDev
-.project
-.pydevproject
-.settings
+# pdm
+.pdm.toml
+.pdm-python
+.pdm-build/
 
-# Visual Studio Code
-.vscode/
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
 
-# Sphinx
-docs/_build
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.direnv/
 
-# Enzyme test folders
-enzyme/tests/test_*/
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
+# Enzyme
+tests/data/
