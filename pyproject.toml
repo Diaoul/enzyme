@@ -39,8 +39,6 @@ test = [
   "requests",
   "mypy",
   "pytest>=6.0",
-  "pytest-cov",
-  "pytest-flakes",
   "importlib_metadata>=4.6; python_version<'3.10'",
 ]
 dev = ["doc8", "mypy", "ruff", "typos", "validate-pyproject", "tox"]
