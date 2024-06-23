@@ -27,7 +27,8 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Multimedia :: Video",
 ]
-dynamic = ["version", "readme"]
+dynamic = ["version"]
+readme = "README.md"
 dependencies = ["importlib_resources>=4.6; python_version=='3.8'"]
 
 # extras
@@ -61,8 +62,6 @@ where = ["."]
 
 [tool.setuptools.dynamic]
 version = { attr = "enzyme.__version__" }
-readme = { file = ["README.md"] }
-
 
 # https://docs.astral.sh/ruff/
 [tool.ruff]
