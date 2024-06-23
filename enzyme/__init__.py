@@ -1,7 +1,7 @@
 __title__ = "enzyme"
-__version__ = "0.4.2-dev"
+__version__ = "0.5.0"
 __author__ = "Antoine Bertin"
-__license__ = "Apache 2.0"
+__license__ = "MIT"
 __copyright__ = "Copyright 2013 Antoine Bertin"
 
 import logging
