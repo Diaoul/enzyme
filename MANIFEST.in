@@ -1,8 +1,0 @@
-include LICENSE
-include CONTRIBUTING.md
-include tox.ini
-
-graft docs
-graft tests
-
-prune */__pycache__
