@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
   test:
@@ -17,9 +17,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
-      - name: Install
+      - name: Install enzyme
         run: |
           python -m pip install -U pip
           python -m pip install -e ".[test]"
-      - run: pytest
+      - name: Test
+        run: pytest
