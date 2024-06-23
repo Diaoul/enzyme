@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK = 0x01, 0x02, 0x11
 
 
-class MKV(object):
+class MKV:
     """Matroska Video file
 
     :param stream: seekable file-like object
@@ -146,7 +146,7 @@ class MKV(object):
         )
 
 
-class Info(object):
+class Info:
     """Object for the Info EBML element"""
 
     def __init__(
@@ -186,7 +186,7 @@ class Info(object):
         return repr(self.__dict__)
 
 
-class Track(object):
+class Track:
     """Base object for the Tracks EBML element"""
 
     def __init__(
@@ -366,7 +366,7 @@ class SubtitleTrack(Track):
     pass
 
 
-class Tag(object):
+class Tag:
     """Object for the Tag EBML element"""
 
     def __init__(self, targets=None, simpletags=None):
@@ -389,7 +389,7 @@ class Tag(object):
         return "<%s [targets=%r, simpletags=%r]>" % (self.__class__.__name__, self.targets, self.simpletags)
 
 
-class SimpleTag(object):
+class SimpleTag:
     """Object for the SimpleTag EBML element"""
 
     def __init__(self, name, language="und", default=True, string=None, binary=None):
@@ -424,7 +424,7 @@ class SimpleTag(object):
         )
 
 
-class Chapter(object):
+class Chapter:
     """Object for the ChapterAtom and ChapterDisplay EBML element
 
     .. note::

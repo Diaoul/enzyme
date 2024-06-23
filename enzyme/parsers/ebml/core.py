@@ -55,7 +55,7 @@ READERS = {
 }
 
 
-class Element(object):
+class Element:
     """Base object of EBML
 
     :param int id: id of the element, best represented as hexadecimal (0x18538067 for Matroska Segment element)
