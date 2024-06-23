@@ -28,6 +28,7 @@ classifiers = [
   "Topic :: Multimedia :: Video",
 ]
 dynamic = ["version", "readme"]
+dependencies = ["importlib_resources>=4.6; python_version=='3.8'"]
 
 # extras
 # https://peps.python.org/pep-0621/#dependencies-optional-dependencies
