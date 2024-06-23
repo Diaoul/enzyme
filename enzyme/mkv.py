@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from .exceptions import ParserError, MalformedMKVError
 from .parsers import ebml
 from datetime import timedelta

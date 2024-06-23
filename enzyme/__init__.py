@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __title__ = "enzyme"
 __version__ = "0.4.2-dev"
 __author__ = "Antoine Bertin"

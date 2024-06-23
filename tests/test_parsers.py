@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from enzyme.parsers import ebml
 import io
 import os.path

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # enzyme documentation build configuration file, created by
 # sphinx-quickstart on Fri May 10 01:11:03 2013.
