@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# C extensions
+*.so
+
 # Distribution / packaging
 .Python
 build/
@@ -22,14 +25,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-poetry.lock
-
-# Tests
-.tox/
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
@@ -46,11 +41,16 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Visual Studio Code
-.vscode/
+# Sphinx documentation
+docs/_build/
 
-# Sphinx
-docs/_build
+# pdm
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
 
 # Environments
 .env
@@ -60,7 +60,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-.envrc
 .direnv/
 
 # mypy
@@ -68,5 +67,5 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# test data
+# Enzyme
 tests/data/
