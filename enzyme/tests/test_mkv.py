@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta, datetime
-from enzyme.mkv import MKV, VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK
 import io
 import os.path
+from enzyme.mkv import MKV, VIDEO_TRACK, AUDIO_TRACK, SUBTITLE_TRACK, SimpleTag
 import requests
 import unittest
 import zipfile
+import xml.etree.ElementTree as xml
+from sys import getsizeof
 
 
 # Test directory
@@ -14,9 +16,14 @@ TEST_DIR = os.path.join(os.path.dirname(__file__), os.path.splitext(__file__)[0]
 
 def setUpModule():
     if not os.path.exists(TEST_DIR):
+        # matroska test suite Wave 1
         r = requests.get('http://downloads.sourceforge.net/project/matroska/test_files/matroska_test_w1_1.zip')
         with zipfile.ZipFile(io.BytesIO(r.content), 'r') as f:
             f.extractall(TEST_DIR)
+        # matroska cover_art test file
+        r = requests.get('http://downloads.sourceforge.net/project/matroska/test_files/cover_art.mkv')
+        with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'wb') as f:
+            f.write(r.content)
 
 
 class MKVTestCase(unittest.TestCase):
@@ -24,6 +31,7 @@ class MKVTestCase(unittest.TestCase):
         with io.open(os.path.join(TEST_DIR, 'test1.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '922D19320F1E13C5B505630AAFD85336')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(minutes=1, seconds=27, milliseconds=336))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 7, 23, 3))
@@ -70,29 +78,41 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.subtitle_tracks) == 0)
         # chapters
         self.assertTrue(len(mkv.chapters) == 0)
-        # tags
-        self.assertTrue(len(mkv.tags) == 1)
-        self.assertTrue(len(mkv.tags[0].simpletags) == 3)
-        self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
-        self.assertTrue(mkv.tags[0].simpletags[0].default == True)
-        self.assertTrue(mkv.tags[0].simpletags[0].language == 'und')
-        self.assertTrue(mkv.tags[0].simpletags[0].string == 'Big Buck Bunny - test 1')
-        self.assertTrue(mkv.tags[0].simpletags[0].binary is None)
-        self.assertTrue(mkv.tags[0].simpletags[1].name == 'DATE_RELEASED')
-        self.assertTrue(mkv.tags[0].simpletags[1].default == True)
-        self.assertTrue(mkv.tags[0].simpletags[1].language == 'und')
-        self.assertTrue(mkv.tags[0].simpletags[1].string == '2010')
-        self.assertTrue(mkv.tags[0].simpletags[1].binary is None)
-        self.assertTrue(mkv.tags[0].simpletags[2].name == 'COMMENT')
-        self.assertTrue(mkv.tags[0].simpletags[2].default == True)
-        self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
-        self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock')
-        self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test1-tag.xml'), 'r') as xmlfile:
+            xmlElement = xml.fromstring(''.join([line.strip() for line in xmlfile.readlines()]))
+        expectedXML = xml.tostring(xmlElement)
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
+        # tags normal and fromXML
+        for i in range(2):
+            self.assertTrue(len(mkv.tags) == 1)
+            self.assertTrue(len(mkv.tags[0].simpletags) == 3)
+            self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
+            self.assertTrue(mkv.tags[0].simpletags[0].default == True)
+            self.assertTrue(mkv.tags[0].simpletags[0].language == 'und')
+            self.assertTrue(mkv.tags[0].simpletags[0].string == 'Big Buck Bunny - test 1')
+            self.assertTrue(mkv.tags[0].simpletags[0].binary is None)
+            self.assertTrue(mkv.tags[0].simpletags[1].name == 'DATE_RELEASED')
+            self.assertTrue(mkv.tags[0].simpletags[1].default == True)
+            self.assertTrue(mkv.tags[0].simpletags[1].language == 'und')
+            self.assertTrue(mkv.tags[0].simpletags[1].string == '2010')
+            self.assertTrue(mkv.tags[0].simpletags[1].binary is None)
+            self.assertTrue(mkv.tags[0].simpletags[2].name == 'COMMENT')
+            self.assertTrue(mkv.tags[0].simpletags[2].default == True)
+            self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
+            self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock')
+            self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+            self.assertTrue(mkv.getTag(50)[0]['TITLE'][0] == mkv.tags[0].simpletags[0])
+            if i == 0:
+                mkv.tags = [] # Empty the tags
+                mkv.tags_from_xml(xmlElement)   # Fill the tags with the xmlElement from file, loop
 
     def test_test2(self):
         with io.open(os.path.join(TEST_DIR, 'test2.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '92B2CE318A9650039C482D67AA55CB7B')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=47, milliseconds=509))
         self.assertTrue(mkv.info.date_utc == datetime(2011, 6, 2, 12, 45, 20))
@@ -157,11 +177,18 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test2-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test3(self):
         with io.open(os.path.join(TEST_DIR, 'test3.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '99499582DFAF06D4A676D2E64C02A507')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=49, milliseconds=64))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 21, 43, 25))
@@ -226,11 +253,18 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 3, header stripping on the video track and no SimpleBlock')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test3-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test5(self):
         with io.open(os.path.join(TEST_DIR, 'test5.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '9D516A0F927A12D286E1502D23D0FDB0')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=46, milliseconds=665))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 18, 6, 43))
@@ -373,6 +407,7 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(len(mkv.chapters) == 0)
         # tags
         self.assertTrue(len(mkv.tags) == 1)
+        self.assertTrue(mkv.tags[0].targets.targettypevalue == 50)
         self.assertTrue(len(mkv.tags[0].simpletags) == 3)
         self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
         self.assertTrue(mkv.tags[0].simpletags[0].default == True)
@@ -389,11 +424,18 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test5-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test6(self):
         with io.open(os.path.join(TEST_DIR, 'test6.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '84FA5B60972A165B852766E7E5B0A283')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=87, milliseconds=336))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 16, 31, 55))
@@ -458,11 +500,18 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test6-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test7(self):
         with io.open(os.path.join(TEST_DIR, 'test7.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == 'B9821FA651B1E247B679260DD2E7E371')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=37, milliseconds=43))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 17, 0, 23))
@@ -527,11 +576,18 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test7-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
 
     def test_test8(self):
         with io.open(os.path.join(TEST_DIR, 'test8.mkv'), 'rb') as stream:
             mkv = MKV(stream)
         # info
+        self.assertTrue(mkv.info.uid == '8A1E00BB51661380AF10D1FE09970B5D')
         self.assertTrue(mkv.info.title is None)
         self.assertTrue(mkv.info.duration == timedelta(seconds=47, milliseconds=341))
         self.assertTrue(mkv.info.date_utc == datetime(2010, 8, 21, 17, 22, 14))
@@ -596,6 +652,197 @@ class MKVTestCase(unittest.TestCase):
         self.assertTrue(mkv.tags[0].simpletags[2].language == 'und')
         self.assertTrue(mkv.tags[0].simpletags[2].string == 'Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s')
         self.assertTrue(mkv.tags[0].simpletags[2].binary is None)
+        # tags to xml
+        with io.open(os.path.join(TEST_DIR, 'test8-tag.xml'), 'r') as xmlfile:
+            xmlString = ''.join([line.strip() for line in xmlfile.readlines()])
+        expectedXML = xml.tostring(xml.fromstring(xmlString))
+        actualXML = xml.tostring(mkv.tags_to_xml())
+        self.assertEqual(expectedXML, actualXML)
+
+    def test_cover_art(self):
+        with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
+            mkv = MKV(stream)
+        # info
+        self.assertTrue(mkv.info.uid == 'A5FA3864646301558CD35CE3F7B1DADC')
+        self.assertTrue(mkv.info.title is None)
+        self.assertTrue(mkv.info.duration == timedelta(seconds=156))
+        self.assertTrue(mkv.info.date_utc == datetime(2010, 9, 23, 19, 1, 57))
+        self.assertTrue(mkv.info.muxing_app == 'libebml2 v0.12.1 + libmatroska2 v0.11.1')
+        self.assertTrue(mkv.info.writing_app == "mkclean 0.6.0 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08")
+        # video track
+        self.assertTrue(len(mkv.video_tracks) == 1)
+        self.assertTrue(mkv.video_tracks[0].type == VIDEO_TRACK)
+        self.assertTrue(mkv.video_tracks[0].number == 2)
+        self.assertTrue(mkv.video_tracks[0].name is None)
+        self.assertTrue(mkv.video_tracks[0].language == 'und')
+        self.assertTrue(mkv.video_tracks[0].enabled == True)
+        self.assertTrue(mkv.video_tracks[0].default == True)
+        self.assertTrue(mkv.video_tracks[0].forced == False)
+        self.assertTrue(mkv.video_tracks[0].lacing == False)
+        self.assertTrue(mkv.video_tracks[0].codec_id == 'V_MPEG4/ISO/AVC')
+        self.assertTrue(mkv.video_tracks[0].codec_name is None)
+        self.assertTrue(mkv.video_tracks[0].width == 1272)
+        self.assertTrue(mkv.video_tracks[0].height == 720)
+        self.assertTrue(mkv.video_tracks[0].interlaced == False)
+        self.assertTrue(mkv.video_tracks[0].stereo_mode is None)
+        self.assertTrue(mkv.video_tracks[0].crop == {})
+        self.assertTrue(mkv.video_tracks[0].display_width is None)
+        self.assertTrue(mkv.video_tracks[0].display_height is None)
+        self.assertTrue(mkv.video_tracks[0].display_unit is None)
+        self.assertTrue(mkv.video_tracks[0].aspect_ratio_type is None)
+        # audio track
+        self.assertTrue(len(mkv.audio_tracks) == 1)
+        self.assertTrue(mkv.audio_tracks[0].type == AUDIO_TRACK)
+        self.assertTrue(mkv.audio_tracks[0].number == 1)
+        self.assertTrue(mkv.audio_tracks[0].name is None)
+        self.assertTrue(mkv.audio_tracks[0].language == 'und')
+        self.assertTrue(mkv.audio_tracks[0].enabled == True)
+        self.assertTrue(mkv.audio_tracks[0].default == True)
+        self.assertTrue(mkv.audio_tracks[0].forced == False)
+        self.assertTrue(mkv.audio_tracks[0].lacing == True)
+        self.assertTrue(mkv.audio_tracks[0].codec_id == 'A_AAC')
+        self.assertTrue(mkv.audio_tracks[0].codec_name is None)
+        self.assertTrue(mkv.audio_tracks[0].sampling_frequency == 44100.0)
+        self.assertTrue(mkv.audio_tracks[0].channels == 2)
+        self.assertTrue(mkv.audio_tracks[0].output_sampling_frequency is None)
+        self.assertTrue(mkv.audio_tracks[0].bit_depth is None)
+        # subtitle track
+        self.assertTrue(len(mkv.subtitle_tracks) == 0)
+        # chapters
+        self.assertTrue(len(mkv.chapters) == 0)
+        # tags
+        self.assertTrue(len(mkv.tags) == 3)
+        # tag 0
+        self.assertTrue(mkv.tags[0].targets.targettypevalue == 70)
+        self.assertTrue(mkv.tags[0].targets.targettype is None)
+        self.assertTrue(len(mkv.tags[0].targets.chapterUIDs) == 0)
+        self.assertTrue(len(mkv.tags[0].targets.trackUIDs) == 0)
+        self.assertTrue(len(mkv.tags[0].targets.editionUIDs) == 0)
+        self.assertTrue(len(mkv.tags[0].targets.attachmentUIDs) == 0)
+        self.assertTrue(len(mkv.tags[0].simpletags) == 2)
+        self.assertTrue(mkv.tags[0].simpletags[0].name == 'TITLE')
+        self.assertTrue(mkv.tags[0].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[0].simpletags[0].language == 'und')
+        self.assertTrue(mkv.tags[0].simpletags[0].string == 'Dexter')
+        self.assertTrue(mkv.tags[0].simpletags[0].binary is None)
+        self.assertTrue(mkv.tags[0].simpletags[1].name == 'COPYRIGHT')
+        self.assertTrue(mkv.tags[0].simpletags[1].default == True)
+        self.assertTrue(mkv.tags[0].simpletags[1].language == 'und')
+        self.assertTrue(mkv.tags[0].simpletags[1].string == 'ShowTime')
+        self.assertTrue(mkv.tags[0].simpletags[1].binary is None)
+        self.assertTrue(len(mkv.tags[0].simpletags[1].simpletags) == 1)
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].name == 'URL')
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].language == 'und')
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].string == 'http://www.sho.com/')
+        self.assertTrue(mkv.tags[0].simpletags[1].simpletags[0].binary is None)
+        #  tag 1
+        self.assertTrue(mkv.tags[1].targets.targettypevalue == 60)
+        self.assertTrue(mkv.tags[1].targets.targettype is None)
+        self.assertTrue(len(mkv.tags[1].targets.chapterUIDs) == 0)
+        self.assertTrue(len(mkv.tags[1].targets.trackUIDs) == 0)
+        self.assertTrue(len(mkv.tags[1].targets.editionUIDs) == 0)
+        self.assertTrue(len(mkv.tags[1].targets.attachmentUIDs) == 0)
+        self.assertTrue(len(mkv.tags[1].simpletags) == 2)
+        self.assertTrue(mkv.tags[1].simpletags[0].name == 'PART_NUMBER')
+        self.assertTrue(mkv.tags[1].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[1].simpletags[0].language == 'und')
+        self.assertTrue(mkv.tags[1].simpletags[0].string == '5')
+        self.assertTrue(mkv.tags[1].simpletags[0].binary is None)
+        self.assertTrue(mkv.tags[1].simpletags[1].name == 'DATE_RELEASE')
+        self.assertTrue(mkv.tags[1].simpletags[1].default == True)
+        self.assertTrue(mkv.tags[1].simpletags[1].language == 'und')
+        self.assertTrue(mkv.tags[1].simpletags[1].string == '2010')
+        self.assertTrue(mkv.tags[1].simpletags[1].binary is None)
+        #  tag 2
+        self.assertTrue(len(mkv.tags[2].simpletags) == 3)
+        self.assertTrue(mkv.tags[2].targets.targettypevalue == 50)
+        self.assertTrue(mkv.tags[2].targets.targettype is None)
+        self.assertTrue(mkv.tags[2].simpletags[0].name == 'SAMPLE')
+        self.assertTrue(mkv.tags[2].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[0].language == 'und')
+        self.assertTrue(mkv.tags[2].simpletags[0].string is None)
+        self.assertTrue(mkv.tags[2].simpletags[0].binary is None)
+        self.assertTrue(len(mkv.tags[2].simpletags[0].simpletags) == 2)
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].name == 'PART_NUMBER')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].language == 'und')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].string == '0')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[0].binary is None)
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].name == 'TITLE')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].language == 'und')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].string == 'Trailer')
+        self.assertTrue(mkv.tags[2].simpletags[0].simpletags[1].binary is None)
+        self.assertTrue(mkv.tags[2].simpletags[1].name == 'TITLE')
+        self.assertTrue(mkv.tags[2].simpletags[1].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[1].language == 'und')
+        self.assertTrue(mkv.tags[2].simpletags[1].string == 'Dexter Season 5 trailer')
+        self.assertTrue(mkv.tags[2].simpletags[1].binary is None)
+        self.assertTrue(mkv.tags[2].simpletags[2].name == 'ORIGINAL')
+        self.assertTrue(mkv.tags[2].simpletags[2].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[2].language == 'und')
+        self.assertTrue(mkv.tags[2].simpletags[2].string is None)
+        self.assertTrue(mkv.tags[2].simpletags[2].binary is None)
+        self.assertTrue(len(mkv.tags[2].simpletags[2].simpletags) == 1)
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].name == 'URL')
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].default == True)
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].language == 'und')
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].string == 'http://www.youtube.com/watch?v=CUbCMbW-BRE')
+        self.assertTrue(mkv.tags[2].simpletags[2].simpletags[0].binary is None)
+        # attachments
+        self.assertTrue(len(mkv.attachments) == 4)
+        # attachment 0
+        self.assertTrue(mkv.attachments[0].name == 'cover.jpg')
+        self.assertTrue(mkv.attachments[0].description is None)
+        self.assertTrue(mkv.attachments[0].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[0].data)//1000 == 133)
+        # attachment 1
+        self.assertTrue(mkv.attachments[1].name == 'small_cover.jpg')
+        self.assertTrue(mkv.attachments[1].description is None)
+        self.assertTrue(mkv.attachments[1].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[1].data)//1000 == 18)
+        # attachment 2
+        self.assertTrue(mkv.attachments[2].name == 'cover_land.jpg')
+        self.assertTrue(mkv.attachments[2].description is None)
+        self.assertTrue(mkv.attachments[2].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[2].data)//1000 == 106)
+        # attachment 3
+        self.assertTrue(mkv.attachments[3].name == 'small_cover_land.jpg')
+        self.assertTrue(mkv.attachments[3].description is None)
+        self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
+        self.assertTrue(getsizeof(mkv.attachments[3].data)//1000 == 16)
+
+        # SimpleTag bracket-access
+        # Here, only testing some cases, not all values
+        self.assertTrue(mkv.getTag(50)[0]['SAMPLE'][0]['TITLE'][0].string == 'Trailer')
+        self.assertTrue(mkv.getTag(70)[0]['COPYRIGHT'][0]['URL'][0].default)
+
+    def test_cover_art_no_attachments(self):
+        with io.open(os.path.join(TEST_DIR, 'cover_art.mkv'), 'rb') as stream:
+            mkv = MKV(stream, load_attachments=False)
+        # attachments
+        self.assertTrue(len(mkv.attachments) == 4)
+        # attachment 0
+        self.assertTrue(mkv.attachments[0].name == 'cover.jpg')
+        self.assertTrue(mkv.attachments[0].description is None)
+        self.assertTrue(mkv.attachments[0].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[0].data is None)
+        # attachment 1
+        self.assertTrue(mkv.attachments[1].name == 'small_cover.jpg')
+        self.assertTrue(mkv.attachments[1].description is None)
+        self.assertTrue(mkv.attachments[1].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[1].data is None)
+        # attachment 2
+        self.assertTrue(mkv.attachments[2].name == 'cover_land.jpg')
+        self.assertTrue(mkv.attachments[2].description is None)
+        self.assertTrue(mkv.attachments[2].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[2].data is None)
+        # attachment 3
+        self.assertTrue(mkv.attachments[3].name == 'small_cover_land.jpg')
+        self.assertTrue(mkv.attachments[3].description is None)
+        self.assertTrue(mkv.attachments[3].mime_type == 'image/jpeg')
+        self.assertTrue(mkv.attachments[3].data is None)
 
 
 def suite():
@@ -604,4 +851,5 @@ def suite():
     return suite
 
 if __name__ == '__main__':
+    print('running tests')
     unittest.TextTestRunner().run(suite())
