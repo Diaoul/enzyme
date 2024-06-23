@@ -34,7 +34,7 @@ dependencies = ["importlib_resources>=4.6; python_version=='3.8'"]
 # extras
 # https://peps.python.org/pep-0621/#dependencies-optional-dependencies
 [project.optional-dependencies]
-docs = ["sphinx", "sphinx-rtd-theme"]
+docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
 test = [
   "PyYAML",
   "requests",
