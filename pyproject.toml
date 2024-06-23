@@ -1,43 +1,190 @@
+# https://peps.python.org/pep-0517/
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
+# https://peps.python.org/pep-0621/
 [project]
 name = "enzyme"
-description = "Python video metadata parser"
+description = "Video metadata parser"
 requires-python = ">=3.8"
-license = { file = "LICENSE" }
-keywords = ["parser", "video", "metadata", "mkv"]
-authors = [{ name = "Antoine Bertin", email = "diaoulael@gmail.com" }]
+license = { text = "MIT" }
+authors = [{ name = "Antoine Bertin", email = "ant.bertin@gmail.com" }]
+maintainers = [{ name = "Antoine Bertin", email = "ant.bertin@gmail.com" }]
+keywords = ["video", "metadata", "parser", "mkv", "matroska", "ebml"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Multimedia :: Video",
-    "Topic :: Software Development :: Libraries :: Python Modules",
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Multimedia :: Video",
 ]
 dynamic = ["version", "readme"]
-dependencies = [
-    "importlib_resources>=4.6; python_version=='3.8'"
-]
 
+# extras
+# https://peps.python.org/pep-0621/#dependencies-optional-dependencies
 [project.optional-dependencies]
 docs = ["sphinx"]
-test = ["PyYAML", "requests"]
-dev = ["tox"]
+test = [
+  "PyYAML",
+  "mypy",
+  "pytest>=6.0",
+  "pytest-cov",
+  "pytest-flakes",
+  "importlib_metadata>=4.6; python_version<'3.10'",
+]
+dev = ["doc8", "mypy", "ruff", "typos", "validate-pyproject", "tox"]
 
 [project.urls]
 homepage = "https://github.com/Diaoul/enzyme"
 repository = "https://github.com/Diaoul/enzyme"
-documentation = "https://enzyme.readthedocs.io"
+documentation = "https://enzyme.readthedocs.org"
+
+[tool.setuptools]
+py-modules = ["enzyme"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+enzyme = ["py.typed", "parsers/ebml/specs/matroska.xml"]
+
+[tool.setuptools.packages.find]
+namespaces = false
+where = ["."]
 
 [tool.setuptools.dynamic]
 version = { attr = "enzyme.__version__" }
-readme = { file = ["README.rst", "HISTORY.rst"] }
+readme = { file = ["README.md"] }
+
+
+# https://docs.astral.sh/ruff/
+[tool.ruff]
+line-length = 120
+src = ["subliminal", "tests"]
+exclude = ["_version.py"]
+
+[tool.ruff.lint]
+pydocstyle = { convention = "pep257" }
+select = [
+  "E",     # style errors
+  "F",     # flakes
+  "W",     # warnings
+  "D",     # pydocstyle
+  "D417",  # Missing argument descriptions in Docstrings
+  "I",     # isort
+  "UP",    # pyupgrade
+  "S",     # bandit
+  "C4",    # flake8-comprehensions
+  "B",     # flake8-bugbear
+  "TCH",   # flake8-typecheck
+  "TID",   # flake8-tidy-imports
+  "RUF",   # ruff-specific rules
+  "ISC",   # flake8-implicit-str-concat
+  "PT",    # flake8-pytest-style
+  "FA",    # flake8-future-annotations
+  "BLE",   # flake8-blind-except
+  "RET",   # flake8-return
+  "SIM",   # flake8-simplify
+  "DTZ",   # flake8-datetimez
+  "A",     # flake8-builtins
+  "FBT",   # flake8-boolean-trap
+  "ANN0",  # flake8-annotations
+  "ANN2",
+  "ASYNC", # flake8-async
+  "TRY",   # tryceratops
+]
+ignore = [
+  "D105", # Missing docstring in magic method
+  "D107", # Missing docstring in `__init__`
+  "D401", # First line should be in imperative mood
+]
+
+[tool.ruff.lint.per-file-ignores]
+"docs/conf*.py" = ["ALL"]
+"subliminal/__init__.py" = ["E402"]
+"tests/*.py" = ["D", "S", "RUF012", "ANN", "FBT"]
+
+# https://docs.astral.sh/ruff/formatter/
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "single"
+
+# https://docs.pytest.org/en/6.2.x/customize.html
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+addopts = "--doctest-glob='*.rst'"
+# markers = ["integration", "converter"]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+
+# https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.report]
+exclude_also = [
+  "pragma: no.cover",
+  "if TYPE_CHECKING:",
+  "@overload",
+  "except ImportError",
+  "\\.\\.\\.",
+  "raise NotImplementedError()",
+  "if __name__ == .__main__.:",
+]
+show_missing = true
+skip_covered = true
+fail_under = 80
+
+[tool.coverage.run]
+source = ["enzyme"]
+relative_files = true
+
+
+# https://mypy.readthedocs.io/en/stable/config_file.html
+[tool.mypy]
+files = "enzyme/**/*.py"
+exclude = ['build', 'dist', 'docs']
+# global-only flags
+pretty = true
+show_error_codes = true
+namespace_packages = false
+warn_redundant_casts = true
+# global per-module flags
+check_untyped_defs = true
+strict_equality = true
+disallow_any_generics = false
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = ["enzyme.*"]
+warn_return_any = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+warn_return_any = false
+disable_error_code = ["var-annotated"]
+
+
+# https://github.com/PyCQA/doc8
+[tool.doc8]
+allow-long-titles = true
+max-line-length = 120
+
+# https://github.com/crate-ci/typos/blob/master/docs/reference.md
+[tool.typos.files]
+extend-exclude = ["tests/"]
+
+[tool.typos.default]
+extend-ignore-re = [
+  "(?Rm)^.*#\\s*spellchecker:\\s*disable-line$",
+  "#\\s*spellchecker:off\\s*\\n.*\\n\\s*#\\s*spellchecker:on",
+]
