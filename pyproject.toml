@@ -35,6 +35,7 @@ dynamic = ["version", "readme"]
 docs = ["sphinx"]
 test = [
   "PyYAML",
+  "requests",
   "mypy",
   "pytest>=6.0",
   "pytest-cov",
