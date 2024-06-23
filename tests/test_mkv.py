@@ -10,16 +10,14 @@ import pytest
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
+
 @pytest.fixture(scope="session")
 def data_files():
     files = []
     for i in range(1, 9):
         files.append(f"test{i}.mkv")
         files.append(f"test{i}-tag.xml")
-    missing_files = [
-            file for file in files
-            if not os.path.exists(os.path.join(DATA_DIR, file))
-    ]
+    missing_files = [file for file in files if not os.path.exists(os.path.join(DATA_DIR, file))]
     if not missing_files:
         return
     r = requests.get("http://downloads.sourceforge.net/project/matroska/test_files/matroska_test_w1_1.zip")
@@ -36,7 +34,10 @@ def test_test1(data_files):
     assert mkv.info.duration == timedelta(minutes=1, seconds=27, milliseconds=336)
     assert mkv.info.date_utc == datetime(2010, 8, 21, 7, 23, 3)
     assert mkv.info.muxing_app == "libebml2 v0.10.0 + libmatroska2 v0.10.1"
-    assert mkv.info.writing_app == "mkclean 0.5.5 ru from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08"
+    assert (
+        mkv.info.writing_app
+        == "mkclean 0.5.5 ru from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08"
+    )
     # video track
     assert len(mkv.video_tracks) == 1
     assert mkv.video_tracks[0].type == VIDEO_TRACK
@@ -97,6 +98,7 @@ def test_test1(data_files):
     assert mkv.tags[0].simpletags[2].string == "Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock"
     assert mkv.tags[0].simpletags[2].binary is None
 
+
 def test_test2(data_files):
     with io.open(os.path.join(DATA_DIR, "test2.mkv"), "rb") as stream:
         mkv = MKV(stream)
@@ -105,7 +107,10 @@ def test_test2(data_files):
     assert mkv.info.duration == timedelta(seconds=47, milliseconds=509)
     assert mkv.info.date_utc == datetime(2011, 6, 2, 12, 45, 20)
     assert mkv.info.muxing_app == "libebml2 v0.21.0 + libmatroska2 v0.22.1"
-    assert mkv.info.writing_app == "mkclean 0.8.3 ru from libebml2 v0.10.0 + libmatroska2 v0.10.1 + mkclean 0.5.5 ru from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08"
+    assert (
+        mkv.info.writing_app
+        == "mkclean 0.8.3 ru from libebml2 v0.10.0 + libmatroska2 v0.10.1 + mkclean 0.5.5 ru from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08"
+    )
     # video track
     assert len(mkv.video_tracks) == 1
     assert mkv.video_tracks[0].type == VIDEO_TRACK
@@ -163,8 +168,12 @@ def test_test2(data_files):
     assert mkv.tags[0].simpletags[2].name == "COMMENT"
     assert mkv.tags[0].simpletags[2].default == True
     assert mkv.tags[0].simpletags[2].language == "und"
-    assert mkv.tags[0].simpletags[2].string == "Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC"
+    assert (
+        mkv.tags[0].simpletags[2].string
+        == "Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC"
+    )
     assert mkv.tags[0].simpletags[2].binary is None
+
 
 def test_test3(data_files):
     with io.open(os.path.join(DATA_DIR, "test3.mkv"), "rb") as stream:
@@ -174,7 +183,10 @@ def test_test3(data_files):
     assert mkv.info.duration == timedelta(seconds=49, milliseconds=64)
     assert mkv.info.date_utc == datetime(2010, 8, 21, 21, 43, 25)
     assert mkv.info.muxing_app == "libebml2 v0.11.0 + libmatroska2 v0.10.1"
-    assert mkv.info.writing_app == "mkclean 0.5.5 ro from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08"
+    assert (
+        mkv.info.writing_app
+        == "mkclean 0.5.5 ro from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.1.1 ('Bouncin' Back') built on Jul  3 2010 22:54:08"
+    )
     # video track
     assert len(mkv.video_tracks) == 1
     assert mkv.video_tracks[0].type == VIDEO_TRACK
@@ -232,8 +244,12 @@ def test_test3(data_files):
     assert mkv.tags[0].simpletags[2].name == "COMMENT"
     assert mkv.tags[0].simpletags[2].default == True
     assert mkv.tags[0].simpletags[2].language == "und"
-    assert mkv.tags[0].simpletags[2].string == "Matroska Validation File 3, header stripping on the video track and no SimpleBlock"
+    assert (
+        mkv.tags[0].simpletags[2].string
+        == "Matroska Validation File 3, header stripping on the video track and no SimpleBlock"
+    )
     assert mkv.tags[0].simpletags[2].binary is None
+
 
 def test_test5(data_files):
     with io.open(os.path.join(DATA_DIR, "test5.mkv"), "rb") as stream:
@@ -395,8 +411,12 @@ def test_test5(data_files):
     assert mkv.tags[0].simpletags[2].name == "COMMENT"
     assert mkv.tags[0].simpletags[2].default == True
     assert mkv.tags[0].simpletags[2].language == "und"
-    assert mkv.tags[0].simpletags[2].string == "Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks"
+    assert (
+        mkv.tags[0].simpletags[2].string
+        == "Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks"
+    )
     assert mkv.tags[0].simpletags[2].binary is None
+
 
 def test_test6(data_files):
     with io.open(os.path.join(DATA_DIR, "test6.mkv"), "rb") as stream:
@@ -406,7 +426,10 @@ def test_test6(data_files):
     assert mkv.info.duration == timedelta(seconds=87, milliseconds=336)
     assert mkv.info.date_utc == datetime(2010, 8, 21, 16, 31, 55)
     assert mkv.info.muxing_app == "libebml2 v0.10.1 + libmatroska2 v0.10.1"
-    assert mkv.info.writing_app == "mkclean 0.5.5 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.0.0 ('The Stars were mine') built on Jun  6 2010 16:18:42"
+    assert (
+        mkv.info.writing_app
+        == "mkclean 0.5.5 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.0.0 ('The Stars were mine') built on Jun  6 2010 16:18:42"
+    )
     # video track
     assert len(mkv.video_tracks) == 1
     assert mkv.video_tracks[0].type == VIDEO_TRACK
@@ -464,8 +487,12 @@ def test_test6(data_files):
     assert mkv.tags[0].simpletags[2].name == "COMMENT"
     assert mkv.tags[0].simpletags[2].default == True
     assert mkv.tags[0].simpletags[2].language == "und"
-    assert mkv.tags[0].simpletags[2].string == "Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking"
+    assert (
+        mkv.tags[0].simpletags[2].string
+        == "Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking"
+    )
     assert mkv.tags[0].simpletags[2].binary is None
+
 
 def test_test7(data_files):
     with io.open(os.path.join(DATA_DIR, "test7.mkv"), "rb") as stream:
@@ -475,7 +502,10 @@ def test_test7(data_files):
     assert mkv.info.duration == timedelta(seconds=37, milliseconds=43)
     assert mkv.info.date_utc == datetime(2010, 8, 21, 17, 0, 23)
     assert mkv.info.muxing_app == "libebml2 v0.10.1 + libmatroska2 v0.10.1"
-    assert mkv.info.writing_app == "mkclean 0.5.5 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.0.0 ('The Stars were mine') built on Jun  6 2010 16:18:42"
+    assert (
+        mkv.info.writing_app
+        == "mkclean 0.5.5 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.0.0 ('The Stars were mine') built on Jun  6 2010 16:18:42"
+    )
     # video track
     assert len(mkv.video_tracks) == 1
     assert mkv.video_tracks[0].type == VIDEO_TRACK
@@ -533,8 +563,12 @@ def test_test7(data_files):
     assert mkv.tags[0].simpletags[2].name == "COMMENT"
     assert mkv.tags[0].simpletags[2].default == True
     assert mkv.tags[0].simpletags[2].language == "und"
-    assert mkv.tags[0].simpletags[2].string == "Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418"
+    assert (
+        mkv.tags[0].simpletags[2].string
+        == "Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418"
+    )
     assert mkv.tags[0].simpletags[2].binary is None
+
 
 def test_test8(data_files):
     with io.open(os.path.join(DATA_DIR, "test8.mkv"), "rb") as stream:
@@ -544,7 +578,10 @@ def test_test8(data_files):
     assert mkv.info.duration == timedelta(seconds=47, milliseconds=341)
     assert mkv.info.date_utc == datetime(2010, 8, 21, 17, 22, 14)
     assert mkv.info.muxing_app == "libebml2 v0.10.1 + libmatroska2 v0.10.1"
-    assert mkv.info.writing_app == "mkclean 0.5.5 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.0.0 ('The Stars were mine') built on Jun  6 2010 16:18:42"
+    assert (
+        mkv.info.writing_app
+        == "mkclean 0.5.5 r from libebml v1.0.0 + libmatroska v1.0.0 + mkvmerge v4.0.0 ('The Stars were mine') built on Jun  6 2010 16:18:42"
+    )
     # video track
     assert len(mkv.video_tracks) == 1
     assert mkv.video_tracks[0].type == VIDEO_TRACK
@@ -602,6 +639,8 @@ def test_test8(data_files):
     assert mkv.tags[0].simpletags[2].name == "COMMENT"
     assert mkv.tags[0].simpletags[2].default == True
     assert mkv.tags[0].simpletags[2].language == "und"
-    assert mkv.tags[0].simpletags[2].string == "Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s"
+    assert (
+        mkv.tags[0].simpletags[2].string
+        == "Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s"
+    )
     assert mkv.tags[0].simpletags[2].binary is None
-
