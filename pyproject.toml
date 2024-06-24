@@ -49,16 +49,8 @@ homepage = "https://github.com/Diaoul/enzyme"
 repository = "https://github.com/Diaoul/enzyme"
 documentation = "https://enzyme.readthedocs.org"
 
-[tool.setuptools]
-py-modules = ["enzyme"]
-include-package-data = true
-
 [tool.setuptools.package-data]
-enzyme = ["py.typed", "parsers/ebml/specs/matroska.xml"]
-
-[tool.setuptools.packages.find]
-namespaces = false
-where = ["."]
+"enzyme.parsers.ebml" = ["specs/matroska.xml"]
 
 [tool.setuptools.dynamic]
 version = { attr = "enzyme.__version__" }
@@ -119,7 +111,6 @@ docstring-code-format = true
 minversion = "6.0"
 testpaths = ["tests"]
 addopts = "--doctest-glob='*.rst'"
-# markers = ["integration", "converter"]
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
 
 # https://coverage.readthedocs.io/en/latest/config.html
